@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en-US"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home Base - ai901</title>
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="description" content="Home Base demo (sample data): missed calls caught, bookings and your morning brief in one place."><link rel="canonical" href="https://ai901.help/home-base/">
+<meta property="og:locale" content="en_US"><meta property="og:type" content="article"><meta property="og:title" content="Home Base - ai901">
+<meta property="og:description" content="Home Base demo (sample data): missed calls caught, bookings and your morning brief in one place."><meta property="og:url" content="https://ai901.help/home-base/"><meta property="og:site_name" content="ai901">
+<meta property="og:image" content="https://ai901.help/assets/og-home-base.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:type" content="image/png">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Home Base - ai901">
+<link rel="icon" href="/assets/icon-512.png" sizes="512x512"><link rel="apple-touch-icon" href="/assets/icon-512.png">
+<style>
+html,body{margin:0}
+.sh{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid #e5e5ea;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif}
+.sh .in{max-width:1200px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:18px}
+.sh .logo{display:flex;align-items:center;gap:8px;color:#0B0620;font-weight:700;font-size:1.15rem;text-decoration:none}
+.sh .logo img{width:34px;height:34px;border-radius:8px}
+.sh nav{margin-left:auto}.sh nav ul{list-style:none;margin:0;padding:0;display:flex;gap:18px}
+.sh nav a{color:#1d1d1f;text-decoration:none;font-size:.95rem}.sh nav a:hover{color:#0071e3}
+.sh .rc{background:#0071e3;color:#fff!important;padding:8px 20px;border-radius:980px;text-decoration:none;font-size:.9rem;white-space:nowrap}
+.sh details{display:none;margin-left:auto}.sh summary{list-style:none;cursor:pointer;font-size:1.6rem;line-height:1;padding:4px 8px;color:#1d1d1f}
+.sh summary::-webkit-details-marker{display:none}
+.sh details ul{list-style:none;margin:0;padding:12px 20px;position:absolute;left:0;right:0;top:100%;background:#fff;border-bottom:1px solid #e5e5ea}
+.sh details li a{display:block;padding:10px 0;color:#1d1d1f;text-decoration:none;font-size:1.05rem}
+@media(max-width:900px){.sh nav{display:none}.sh details{display:block}.sh .rc{display:none}}
+.sf{background:#fff;color:#0B0620;text-align:center;padding:48px 20px;font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;border-top:1px solid #e5e5ea}
+.sf a{color:#0B0620;text-decoration:none;font-weight:600}
+.post{max-width:720px;margin:0 auto;padding:56px 24px 80px;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Arial,sans-serif;color:#1d1d1f;line-height:1.65;font-size:1.06rem}
+.post h1{font-size:2.3rem;line-height:1.15;letter-spacing:-.02em;margin:0 0 24px}.post h2{margin-top:2em}.post a{color:#0071e3}
+.post blockquote{margin:0 0 1.5em;padding:16px 20px;background:#f5f5f7;border-left:4px solid #0071e3;border-radius:8px}
+.post{overflow-wrap:anywhere}.post table{border-collapse:collapse;width:100%;display:block;overflow-x:auto}.post img,.post pre{max-width:100%;overflow-x:auto}.post td,.post th{border:1px solid #d2d2d7;padding:8px}
+.post .more{margin-top:48px;padding-top:24px;border-top:1px solid #e5e5ea}
+</style></head><body>
+<header class="sh"><div class="in"><a class="logo" href="/"><img src="/assets/icon-512.png" alt="ai901" width="34" height="34">ai901</a><nav aria-label="Main"><ul><li><a href="/#services">Services</a></li><li><a href="/#faq">FAQ</a></li><li><a href="/#about">About</a></li><li><a href="/#contact">Contact</a></li><li><a href="/play/">Games</a></li><li><a href="/demo/">Demo</a></li><li><a href="/home-base/">Home Base</a></li><li><a href="/missed-call-cost/">Blog</a></li></ul></nav><a class="rc" href="/#contact">Request Consultation</a><details><summary aria-label="Menu">&#9776;</summary><ul><li><a href="/#services">Services</a></li><li><a href="/#faq">FAQ</a></li><li><a href="/#about">About</a></li><li><a href="/#contact">Contact</a></li><li><a href="/play/">Games</a></li><li><a href="/demo/">Demo</a></li><li><a href="/home-base/">Home Base</a></li><li><a href="/missed-call-cost/">Blog</a></li><li><a href="/#contact">Request Consultation</a></li></ul></details></div></header>
+<main>
+
+<!-- ai901 Home Base v3 (SAMPLE DATA demo) -->
+<style>
+:root{--bg:#000;--card:#111317;--card2:#1a1d23;--line:rgba(255,255,255,.08);--tx:#f5f5f7;--mut:#9aa0aa;--g:#34d399;--r:22px;
+font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Roboto,"Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:left}
+.app{max-width:430px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 12px) 16px 120px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px}
+.hello{color:var(--mut);font-size:15px}
+h1{margin:2px 0 0;font-size:34px;font-weight:700;letter-spacing:-.02em}
+h2{font-size:22px;font-weight:700;margin:18px 4px 10px;letter-spacing:-.01em}
+.pill{font-size:11px;font-weight:700;letter-spacing:.08em;color:#fbbf24;border:1px solid rgba(251,191,36,.45);background:rgba(251,191,36,.1);padding:5px 10px;border-radius:999px;margin-bottom:6px}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--line)}
+.money{display:flex;align-items:center;gap:16px;padding:16px 18px;background:radial-gradient(120% 140% at 0% 0%,rgba(52,211,153,.22),transparent 60%),var(--card)}
+.ring{width:108px;height:108px;flex:none;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:12;stroke-linecap:round}
+.track{stroke:rgba(255,255,255,.08)}.prog{stroke:var(--g);stroke-dasharray:326.7;stroke-dashoffset:326.7;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)}
+.label{color:var(--mut);font-size:15px}
+.big{font-size:44px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1.1;margin:2px 0}
+.sub{font-size:14px;color:var(--mut)}
+.tag{display:inline-block;margin-top:8px;font-size:11px;font-weight:600;color:#fbbf24;opacity:.9}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.stat{height:100px;perspective:800px;position:relative}
+.face{position:absolute;inset:0;border-radius:18px;background:var(--card);border:1px solid var(--line);padding:14px 12px;display:flex;flex-direction:column;justify-content:flex-end;backface-visibility:hidden;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.face svg{width:26px;height:26px;color:var(--g);margin-bottom:auto}
+.stat:nth-child(2) .face svg{color:#38bdf8}.stat:nth-child(3) .face svg{color:#fbbf24}
+.face b{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.face span{font-size:12px;color:var(--mut);margin-top:2px}
+.back{transform:rotateY(180deg);background:linear-gradient(160deg,#064e3b,#0b1220)}
+.back i{font-style:normal;font-size:10px;color:#fbbf24;font-weight:600;position:absolute;top:12px;left:12px;letter-spacing:.06em;text-transform:uppercase}
+.stat.flipped .front{transform:rotateY(-180deg)}.stat.flipped .back{transform:rotateY(0)}
+.hint{text-align:center;color:var(--mut);font-size:12px;margin:8px 0 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{border-radius:var(--r);overflow:hidden;background:var(--card);border:1px solid var(--line);transition:transform .18s}
+.tile:active,.stat:active{transform:scale(.96)}
+.art{aspect-ratio:16/10;display:grid;place-items:center}
+.art svg{width:100%;height:100%;transition:transform .5s}
+.tile:hover .art svg{transform:scale(1.06)}
+.t1 .art{background:linear-gradient(160deg,#052e25,#0b1220)}.t2 .art{background:linear-gradient(160deg,#3a2306,#0b1220)}
+.t3 .art{background:linear-gradient(160deg,#1e1b4b,#0b1220)}.t4 .art{background:linear-gradient(160deg,#1a1a1a,#0b1220)}
+.cap{padding:8px 14px 12px}.cap b{display:block;font-size:16px;font-weight:600}.cap span{font-size:13px;color:var(--mut)}
+.t1 .art svg{animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.feed{background:var(--card);border-radius:var(--r);border:1px solid var(--line);overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;padding:15px 16px;font-size:16px}.row+.row{border-top:1px solid var(--line)}
+.row b{font-weight:500;flex:1}.row em{font-style:normal;color:var(--mut);font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%}.dot.g{background:var(--g)}.dot.b{background:#38bdf8}.dot.o{background:#fbbf24}
+.foot{text-align:center;color:var(--mut);font-size:13px;margin-top:24px}.foot span{font-size:11px;opacity:.8}
+.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:space-around;padding:8px 0 calc(env(safe-area-inset-bottom) + 18px);background:rgba(18,18,20,.82);backdrop-filter:blur(20px) saturate(1.6);-webkit-backdrop-filter:blur(20px) saturate(1.6);border-top:1px solid var(--line);z-index:5}
+.tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--mut);cursor:pointer;min-width:64px}
+.tabbar svg{width:25px;height:25px}.tabbar a.on{color:var(--g)}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .3s;z-index:9}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;max-width:430px;max-height:88vh;overflow:auto;background:#16181d;border-radius:28px 28px 0 0;padding:8px 20px calc(env(safe-area-inset-bottom) + 28px);transform:translateY(105%);transition:transform .42s cubic-bezier(.2,.9,.2,1);z-index:10;touch-action:pan-y}
+.sheet.on{transform:none}
+.grab{width:38px;height:5px;border-radius:3px;background:rgba(255,255,255,.25);margin:4px auto 14px}
+.sh-h{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.sh-h svg{width:52px;height:40px;flex:none}
+.sh-h h3{margin:0;font-size:24px;font-weight:700}
+.sh-s{color:var(--mut);font-size:15px;margin:0 0 16px}
+.sd{font-size:11px;font-weight:700;color:#fbbf24;letter-spacing:.06em}
+.step{display:flex;gap:12px;align-items:flex-start;padding:12px;border-radius:16px;background:var(--card2);margin-bottom:10px;opacity:0;transform:translateY(12px);transition:.4s}
+.step.in{opacity:1;transform:none}
+.step .ic{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;flex:none;font-size:18px;font-weight:700}
+.step b{display:block;font-size:15px}.step span{font-size:13px;color:var(--mut)}
+.bubble{max-width:80%;padding:10px 14px;border-radius:20px;font-size:15px;margin:6px 0;opacity:0;transform:scale(.9);transition:.35s;line-height:1.3}
+.bubble.in{opacity:1;transform:none}
+.bubble.me{background:#2563eb;margin-left:auto;border-bottom-right-radius:6px}
+.bubble.them{background:#2a2d33;border-bottom-left-radius:6px}
+.sys{text-align:center;font-size:12px;color:var(--mut);margin:8px 0}
+.big-btn{display:block;width:100%;text-align:center;background:var(--g);color:#03140d;font-weight:700;font-size:17px;padding:15px;border-radius:16px;margin-top:14px}
+.ba{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ba .col{border-radius:18px;padding:14px;background:var(--card2)}
+.ba h4{margin:0 0 8px;font-size:15px}
+.ba .col.b h4{color:#f87171}.ba .col.a h4{color:var(--g)}
+.ba p{margin:0 0 8px;font-size:13px;color:#d1d5db;display:flex;gap:6px}.ba p em{color:var(--mut);font-style:normal;min-width:38px}
+.toggle{display:flex;background:var(--card2);border-radius:12px;padding:3px;margin-bottom:14px}
+.toggle button{flex:1;text-align:center;padding:9px;border-radius:10px;font-weight:600;font-size:14px;color:var(--mut)}
+.toggle button.on{background:#2c3038;color:var(--tx)}
+.meter{height:10px;border-radius:5px;background:rgba(255,255,255,.08);overflow:hidden;margin:6px 0 2px}
+.meter i{display:block;height:100%;border-radius:5px;transition:width 1s}
+@media (min-width:900px){
+ body{background:radial-gradient(60% 50% at 50% 0%,#0d2a22,#000 70%)}
+ .app{max-width:1180px;display:grid;grid-template-columns:460px 1fr;column-gap:36px;padding:56px 32px 40px;zoom:1.12;
+  grid-template-areas:"top h2a" "money grid" "stats grid" "hint grid" "h2b grid" "feed grid" "foot foot";grid-template-rows:auto auto auto auto auto 1fr auto}
+ .top{grid-area:top}.money{grid-area:money}.stats{grid-area:stats}.hint{grid-area:hint}
+ .app>h2:nth-of-type(1){grid-area:h2a;align-self:end;margin:0 4px 16px}.grid{grid-area:grid;align-self:start}
+ .app>h2:nth-of-type(2){grid-area:h2b;margin-top:18px}.feed{grid-area:feed;align-self:start}.foot{grid-area:foot}
+ .tabbar{display:none}
+ .sheet{bottom:auto;top:50%;border-radius:28px;transform:translateY(-40%) scale(.96);opacity:0;pointer-events:none;transition:.3s}
+ .sheet.on{transform:translateY(-50%);opacity:1;pointer-events:auto}
+}
+/* v3 additions: honest metrics, data states, source sheet */
+.t3 .art{background:linear-gradient(160deg,#0b2a4a,#0b1220)}.t4 .art{background:linear-gradient(160deg,#2a1f3d,#0b1220)}
+.upd{color:var(--mut);font-size:12px;text-align:center;margin:10px 0 0}
+.state{padding:18px;text-align:center;color:var(--mut);font-size:15px}
+.state b{display:block;color:var(--tx);font-size:17px;margin-bottom:4px}
+.err{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.08)}
+.src{padding:12px;border-radius:16px;background:var(--card2);margin-bottom:10px;opacity:0;transform:translateY(12px);transition:.4s}
+.src.in{opacity:1;transform:none}
+.src b{display:block;font-size:15px}.src span{display:block;font-size:13px;color:var(--mut);margin-top:3px;line-height:1.35}
+.src.no b{color:#f87171}
+.badge{display:inline-block;font-size:11px;font-weight:700;color:#34d399;background:rgba(52,211,153,.12);border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.skel{display:inline-block;min-width:1.2em;color:transparent;background:rgba(255,255,255,.08);border-radius:6px}
+@media (min-width:900px){.err{grid-column:1}.app{grid-template-areas:"top h2a" "money grid" "err grid" "stats grid" "hint grid" "h2b grid" "feed grid" "upd grid" "foot foot";grid-template-rows:auto auto auto auto auto auto auto 1fr auto}.err{grid-area:err}.upd{grid-area:upd}}
+.app h1,.app h2,.app h3{color:var(--tx)!important;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif!important;text-transform:none!important;opacity:1!important}
+/* v4: scope + theme-leak reset (page-id-100 / .app only) */
+body.page-id-100{margin:0;padding:0;background:var(--bg);color:var(--tx);font-size:16px;line-height:normal;overflow-x:hidden}
+body.page-id-100 .wp-site-blocks,body.page-id-100 .wp-site-blocks>.entry-content,body.page-id-100 .entry-content.has-global-padding{padding:0!important;margin:0!important;max-width:none!important}
+body.page-id-100 .entry-content>main.app{max-width:430px;margin:0 auto!important;margin-block-start:0!important;width:100%}
+main.app,main.app *,.sheet,.sheet *,.tabbar,.tabbar *{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Roboto,"Segoe UI",system-ui,sans-serif!important;line-height:normal;letter-spacing:normal;text-transform:none;box-sizing:border-box}
+main.app p,main.app h1,main.app h2,main.app h3,main.app h4,.sheet p,.sheet h3,.sheet h4{line-height:1.2;padding:0}
+main.app .big{line-height:1.1}main.app .bubble,.sheet .bubble{line-height:1.3}.sheet .src span{line-height:1.35}
+main.app .top,main.app .money,main.app .stats,main.app .grid,main.app .feed,main.app .err{margin-left:0;margin-right:0}
+main.app h1{letter-spacing:-.02em!important}main.app h2{letter-spacing:-.01em!important;white-space:nowrap}
+main.app button,.sheet button{font-size:inherit;line-height:normal;margin:0;box-shadow:none;min-height:0;text-decoration:none}
+main.app svg,.sheet svg,.tabbar svg{max-width:none;max-height:none;display:block}
+main.app .face svg{flex:none;width:26px!important;height:26px!important}
+main.app .face{overflow:hidden}main.app .face b{line-height:1.15}main.app .face span{line-height:1.2}
+main.app .money-body{min-width:0;flex:1}main.app .money .sub{line-height:1.45}
+main.app .art{aspect-ratio:16/10;width:100%;position:relative;overflow:hidden;flex:none}main.app .art svg{position:absolute;inset:0;width:100%!important;height:100%!important}
+main.app .tile{display:flex;flex-direction:column;height:100%;width:100%;margin:0}main.app .grid{align-items:stretch}
+main.app .cap{flex:1}main.app .cap b{line-height:1.3}main.app .cap span{line-height:1.35;display:block}
+.tabbar a{text-decoration:none!important;line-height:normal}.tabbar svg{width:25px!important;height:25px!important}
+main.app button:focus:not(:focus-visible){outline:none}
+.sheet .sh-h svg{width:52px!important;height:40px!important}
+@media (min-width:900px){body.page-id-100{background:radial-gradient(60% 50% at 50% 0%,#0d2a22,#000 70%)}body.page-id-100 .entry-content>main.app{max-width:1180px}}
+</style>
+<main class="app">
+ <header class="top">
+  <div><div class="hello">Good morning</div><h1>Home Base</h1></div>
+  <span class="pill" data-sample>SAMPLE DATA</span>
+ </header>
+ <section class="card money" id="money">
+  <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+   <circle cx="60" cy="60" r="52" class="track"/><circle cx="60" cy="60" r="52" class="prog" id="ringProg"/>
+  </svg>
+  <div class="money-body">
+   <div class="label">Missed calls caught today</div>
+   <div class="big" id="caught">—</div>
+   <div class="sub" id="ringNote">Loading…</div>
+   <div class="sub" style="white-space:nowrap">This month: <b id="monthCaught">—</b> caught, <b id="monthTexted">—</b> texted</div>
+   <div class="tag" data-sample>Sample data · today &amp; month</div>
+  </div>
+ </section>
+ <div class="card err state" id="err" hidden><b>Can’t load your numbers</b><span id="errMsg"></span></div>
+ <div class="stats">
+  <button class="stat" data-flip><div class="face front"><svg><use href="#i-phone"/></svg><b id="sTexted">—</b><span>Texted back</span></div><div class="face back"><b id="sFastBack">—</b><span>within a minute</span><i data-sample>sample</i></div></button>
+  <button class="stat" data-flip><div class="face front"><svg><use href="#i-clock"/></svg><b id="sMedian">—</b><span>Typical text time</span></div><div class="face back"><b>≤ 60s</b><span>our target</span><i data-sample>sample</i></div></button>
+  <button class="stat" data-flip><div class="face front"><svg><use href="#i-cal"/></svg><b id="sBook">—</b><span id="sBookLbl">Bookings today</span></div><div class="face back"><b id="sBookBack">—</b><span>after a text</span><i data-sample>sample</i></div></button>
+ </div>
+ <p class="hint">Tap a tile to flip it<span data-sample> · all numbers are sample data</span></p>
+ <h2>See how it works</h2>
+ <div class="grid">
+  <button class="tile t1" data-sheet="calls"><div class="art"><svg viewBox="0 0 160 120"><use href="#a-calls"/></svg></div><div class="cap"><b>Missed calls</b><span>Texted back in a minute</span></div></button>
+  <button class="tile t2" data-sheet="brief"><div class="art"><svg viewBox="0 0 160 120"><use href="#a-brief"/></svg></div><div class="cap"><b>Morning brief</b><span>Ready at 7 AM</span></div></button>
+  <button class="tile t3" data-sheet="book"><div class="art"><svg viewBox="0 0 160 120"><use href="#a-book"/></svg></div><div class="cap"><b>Bookings</b><span>From the text link</span></div></button>
+  <button class="tile t4" data-sheet="src"><div class="art"><svg viewBox="0 0 160 120"><use href="#a-src"/></svg></div><div class="cap"><b>Your numbers</b><span>Where they come from</span></div></button>
+ </div>
+ <h2>Today</h2>
+ <div class="feed" id="feed"><div class="state">Loading…</div></div>
+ <p class="upd" id="upd"></p>
+ <p class="foot">ai901 · Memphis · $297 pilot<br><span data-sample>Demo with sample data. Not a real business.</span></p>
+</main>
+<nav class="tabbar"><a class="on"><svg><use href="#i-home"/></svg>Home</a><a data-sheet="calls"><svg><use href="#i-phone"/></svg>Calls</a><a data-sheet="brief"><svg><use href="#i-sun"/></svg>Brief</a><a data-sheet="book"><svg><use href="#i-cal"/></svg>Bookings</a></nav>
+<div class="scrim" id="scrim"></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><div id="sheetBody"></div></section>
+<svg width="0" height="0" style="position:absolute">
+ <defs>
+  <linearGradient id="gG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#0ea5e9"/></linearGradient>
+  <linearGradient id="gO" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fbbf24"/><stop offset="1" stop-color="#f97316"/></linearGradient>
+  <linearGradient id="gP" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a78bfa"/><stop offset="1" stop-color="#6366f1"/></linearGradient>
+  <linearGradient id="gB" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38bdf8"/><stop offset="1" stop-color="#2563eb"/></linearGradient>
+<symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15 2 2 4-4"/></g></symbol>
+ <symbol id="a-book" viewBox="0 0 160 120"><circle cx="80" cy="62" r="44" fill="url(#gB)" opacity=".16"/><rect x="40" y="24" width="80" height="74" rx="12" fill="#0b1220" stroke="url(#gB)" stroke-width="3"/><rect x="40" y="24" width="80" height="18" rx="9" fill="#2563eb"/><g fill="#1f2937"><rect x="50" y="52" width="14" height="12" rx="3"/><rect x="73" y="52" width="14" height="12" rx="3"/><rect x="50" y="72" width="14" height="12" rx="3"/><rect x="96" y="72" width="14" height="12" rx="3"/></g><rect x="96" y="52" width="14" height="12" rx="3" fill="#38bdf8"/><rect x="73" y="72" width="14" height="12" rx="3" fill="#34d399"/><circle cx="122" cy="96" r="13" fill="#34d399"/><path d="m116 96 4 4 7-8" stroke="#04140e" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ <symbol id="a-src" viewBox="0 0 160 120"><rect x="24" y="22" width="112" height="22" rx="8" fill="#1e1b4b" stroke="#a78bfa" stroke-width="2"/><rect x="24" y="50" width="112" height="22" rx="8" fill="#1e1b4b" stroke="#818cf8" stroke-width="2"/><rect x="24" y="78" width="112" height="22" rx="8" fill="#1e1b4b" stroke="#6366f1" stroke-width="2"/><g fill="#a78bfa"><circle cx="38" cy="33" r="4"/><circle cx="38" cy="61" r="4"/><circle cx="38" cy="89" r="4"/></g><g fill="#c4b5fd" opacity=".55"><rect x="50" y="30" width="54" height="6" rx="3"/><rect x="50" y="58" width="40" height="6" rx="3"/><rect x="50" y="86" width="62" height="6" rx="3"/></g><path d="m114 30 4 4 8-8M114 58l4 4 8-8M114 86l4 4 8-8" stroke="#34d399" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+ </defs>
+ <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></symbol>
+ <symbol id="i-clock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></g></symbol>
+ <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></symbol>
+ <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></symbol>
+ <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+ <symbol id="i-team" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 1.6 4.5 4.5"/></g></symbol>
+ <symbol id="a-calls" viewBox="0 0 160 120"><circle cx="80" cy="60" r="44" fill="url(#gG)" opacity=".18"/><circle cx="80" cy="60" r="30" fill="url(#gG)" opacity=".35"/><rect x="58" y="22" width="44" height="78" rx="10" fill="#0b1220" stroke="url(#gG)" stroke-width="3"/><rect x="64" y="38" width="28" height="12" rx="6" fill="#34d399"/><rect x="68" y="56" width="28" height="12" rx="6" fill="#1f2937"/><circle cx="118" cy="34" r="12" fill="#ef4444"/><path d="M113 34h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/></symbol>
+ <symbol id="a-brief" viewBox="0 0 160 120"><circle cx="80" cy="74" r="30" fill="url(#gO)"/><g stroke="#fbbf24" stroke-width="4" stroke-linecap="round"><path d="M80 22v12M44 40l8 8M116 40l-8 8M30 74h12M118 74h12"/></g><rect x="20" y="84" width="120" height="30" fill="#0b1220"/><rect x="40" y="92" width="80" height="6" rx="3" fill="#fbbf24" opacity=".5"/><rect x="52" y="102" width="56" height="6" rx="3" fill="#fbbf24" opacity=".3"/></symbol>
+   </defs>
+</svg>
+<script>
+// Home Base UI renderer. Takes a summary object (same shape the Worker's /api/summary returns)
+// and draws it. It contains NO numbers of its own.
+(()=>{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const n=v=>v==null?'\u2014':String(v);
+let D=null;
+function greet(){const h=new Date().getHours();return h<12?'Good morning':h<17?'Good afternoon':'Good evening';}
+function updated(iso){if(!iso)return'';const d=new Date(iso);return 'Updated '+d.toLocaleTimeString('en-US',{timeZone:'America/Chicago',hour:'numeric',minute:'2-digit'})+' CT';}
+function render(d){
+ D=d; const t=d.today||{}, m=d.month||{}, S=d.sample;
+ $('.hello').textContent=greet();
+ document.querySelectorAll('[data-sample]').forEach(e=>e.hidden=!S);
+ $('#err').hidden=true;
+ $('#caught').textContent=n(t.missedCalls);
+ $('#monthCaught').textContent=n(m.missedCalls);
+ $('#monthTexted').textContent=n(m.textsSent);
+ const ratio=t.missedCalls?Math.min(1,(t.textsSent||0)/t.missedCalls):0;
+ $('#ringProg').style.strokeDashoffset=326.7*(1-ratio);
+ $('#ringNote').textContent=t.missedCalls?`${n(t.textsSent)} of ${t.missedCalls} texted back`:'No missed calls yet today';
+ $('#sTexted').textContent=n(t.textsSent);
+ $('#sFastBack').textContent=t.timedTexts?`${t.textedWithinMinute} of ${t.timedTexts}`:'\u2014';
+ $('#sMedian').textContent=t.medianTextSeconds==null?'\u2014':t.medianTextSeconds+'s';
+ const ext=t.bookingMode&&t.bookingMode!=='ghl';
+ $('#sBook').textContent=ext?'App':n(t.bookings);
+ $('#sBookLbl').textContent=ext?'Bookings in your app':'Bookings today';
+ $('#sBookBack').textContent=ext?'\u2014':n(t.bookedAfterText);
+ const f=$('#feed'); const rows=(d.feed||[]);
+ f.innerHTML=rows.length?rows.map(r=>`<div class="row"><span class="dot ${r.kind==='booked'?'g':r.kind==='brief'?'o':'b'}"></span><b>${esc(r.label)}</b><em>${esc(r.time)}</em></div>`).join(''):'<div class="state"><b>Quiet so far</b>No missed calls today. Anything new shows up here.</div>';
+ $('#upd').textContent=updated(d.updatedAt);
+}
+function showError(msg){$('#err').hidden=false;$('#errMsg').textContent=msg||'Couldn\u2019t reach your data.';
+ ['#caught','#monthCaught','#monthTexted','#sTexted','#sFastBack','#sMedian','#sBook','#sBookBack'].forEach(s=>$(s).textContent='\u2014');
+ $('#ringProg').style.strokeDashoffset=326.7;$('#ringNote').textContent='No data right now';
+ $('#feed').innerHTML='<div class="state"><b>Nothing to show</b>We show nothing rather than guess.</div>';}
+// Sheets
+const ART={calls:'a-calls',brief:'a-brief',book:'a-book',src:'a-src'};
+const sd=()=>D&&D.sample?'<div class="sd">SAMPLE DATA</div>':'';
+const head=(k,t,s)=>`<div class="sh-h"><svg viewBox="0 0 160 120"><use href="#${ART[k]}"/></svg><div><h3>${t}</h3>${sd()}</div></div><p class="sh-s">${s}</p>`;
+const step=(c,ic,t,s)=>`<div class="step"><div class="ic" style="background:${c}22;color:${c}">${ic}</div><div><b>${t}</b><span>${s}</span></div></div>`;
+const src=(t,s,no)=>`<div class="src${no?' no':''}"><b>${t}</b><span>${s}</span></div>`;
+const S={
+calls:()=>{const t=(D&&D.today)||{};const biz=esc((D&&D.businessName)||'Your business').replace(/ \(sample\)$/,'');
+ return head('calls','Missed call','You\u2019re busy. The caller still gets a text.')+
+ `<div class="sys">Tue 2:14 PM \u00b7 (901) 555-0142 \u00b7 missed</div>
+ <div class="bubble me">${biz}: Sorry we missed your call. Book online here: ${D&&D.sample?'bluffcitycuts.com/book':'your booking link'} or reply to this text. Reply STOP to opt out.</div>
+ <div class="sys">Texted back${t.medianTextSeconds!=null&&D.sample?' in 38 sec':''}${D&&D.sample?' \u00b7 sample':''}</div>
+ <div class="bubble them">Thanks, booking now</div>
+ <div class="sys">Booked online \u00b7 Sat 10:00 AM${D&&D.sample?' \u00b7 sample':''}</div>
+ <div class="step">${''}<div class="ic" style="background:#38bdf822;color:#38bdf8">i</div><div><b>Replies come to you</b><span>The text is automatic. If they reply, you answer. No AI writes back.</span></div></div>
+ <button class="big-btn" data-replay>Play again</button>`},
+brief:()=>{const b=D&&D.brief;const lines=b&&b.lines||[];
+ return head('brief','Morning brief','Ready at 7:00 AM. Read it in 30 seconds.')+
+ (lines.length?lines.map((l,i)=>step(['#fbbf24','#34d399','#38bdf8','#a78bfa','#f87171','#9aa0aa'][i],i+1,esc(l),'')).join(''):'<div class="state"><b>No brief yet today</b>It\u2019s built at 7:00 AM CT from your calls, texts and bookings.</div>')+
+ `<button class="big-btn" data-replay>Play again</button>`},
+book:()=>{const t=(D&&D.today)||{};
+ if(t.bookingMode&&t.bookingMode!=='ghl')return head('book','Bookings','Your bookings live in your booking app.')+'<div class="state"><b>Check your booking app</b>Home Base only counts bookings made in the ai901 calendar.</div>';
+ return head('book','Bookings','Booked online from the link in the text.')+
+ step('#38bdf8',n(t.bookings),'Bookings today',t.firstAppointment?'First at '+esc(t.firstAppointment):'None yet')+
+ step('#34d399',n(t.bookedAfterText),'Booked after a missed-call text','Same caller booked after getting the text')+
+ step('#9aa0aa','\u2014','We don\u2019t show dollar amounts','We see bookings, not your sales')+
+ `<button class="big-btn" data-replay>Play again</button>`},
+srcs:()=>head('src','Where the numbers come from','Every number is counted, not guessed.')+
+ src('Missed calls caught','Each unanswered or busy call forwarded to your texting line.')+
+ src('Texted back within a minute','Time from the missed call to our text going out. Delivery depends on the caller\u2019s carrier.')+
+ src('Bookings','Appointments in your online calendar. Bookings in other apps aren\u2019t counted.')+
+ src('Morning brief','Built at 7:00 AM CT from the three numbers above.')+
+ src('Not shown','Revenue, dollar savings and time saved. We can\u2019t measure them, so we don\u2019t guess.',true)+
+ `<button class="big-btn" data-replay>Play again</button>`
+};
+S.src=S.srcs;
+const sheet=$('#sheet'),scrim=$('#scrim'),body=$('#sheetBody');let timers=[];
+function play(){timers.forEach(clearTimeout);timers=[];
+ body.querySelectorAll('.bubble,.step,.src,.sys').forEach(el=>el.classList.remove('in'));
+ body.querySelectorAll('.bubble,.step,.src').forEach((el,i)=>{timers.push(setTimeout(()=>el.classList.add('in'),250+i*450));});}
+function open(k){body.innerHTML=S[k]();sheet.classList.add('on');scrim.classList.add('on');play();
+ body.querySelectorAll('[data-replay]').forEach(b=>b.onclick=play);}
+function close(){sheet.classList.remove('on');scrim.classList.remove('on');}
+document.querySelectorAll('[data-flip]').forEach(b=>b.onclick=()=>b.classList.toggle('flipped'));
+document.querySelectorAll('[data-sheet]').forEach(b=>b.onclick=()=>open(b.dataset.sheet));
+scrim.onclick=close;
+let y0=null;sheet.addEventListener('touchstart',e=>{if(sheet.scrollTop<=0)y0=e.touches[0].clientY},{passive:true});
+sheet.addEventListener('touchmove',e=>{if(y0!==null){const d=e.touches[0].clientY-y0;if(d>0)sheet.style.transform=`translateY(${d}px)`}},{passive:true});
+sheet.addEventListener('touchend',e=>{if(y0===null)return;const d=e.changedTouches[0].clientY-y0;sheet.style.transform='';y0=null;if(d>90)close();});
+addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+window.HB={open,close,render,showError};
+})();
+// DEMO ONLY: draws the page from fake numbers. Every view shows "SAMPLE DATA".
+// The real page (home-base-real/public/app.js) gets numbers only from /api/summary.
+HB.render({sample:true,businessName:'Bluff City Cuts (sample)',updatedAt:new Date().toISOString(),
+ today:{missedCalls:7,textsSent:7,textedWithinMinute:7,timedTexts:7,medianTextSeconds:38,optouts:0,bookings:4,bookedAfterText:2,repliesWaiting:1,firstAppointment:'9:30 AM',bookingMode:'ghl'},
+ month:{missedCalls:41,textsSent:41},
+ feed:[{kind:'booked',label:'Booked after a missed-call text',time:'8:14'},{kind:'text',label:'Missed call texted back',time:'8:02'},{kind:'brief',label:'Morning brief ready',time:'7:00'}],
+ brief:{lines:['4 appointments today. First at 9:30 AM.','Yesterday: 3 missed calls, all 3 texted back within a minute.','1 reply is waiting for you.','Nobody opted out.']}});
+</script>
+
+
+</main>
+<footer class="sf"><a href="/">ai901</a></footer>
+</body></html>
