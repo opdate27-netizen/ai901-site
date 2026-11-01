@@ -125,12 +125,19 @@ window.PANTRY_CHIPS = [
 ];
 
 /* Allergy chips: exclude ingredients and meals that use them.
- * Meal ideas only. Always check labels for allergens. */
+ * Meal ideas only. Always check labels for allergens.
+ * Be conservative: tag processed foods when unsure. */
 window.ALLERGY_CHIPS = [
   { id: "nuts", label: "Nuts", keys: ["peanut_butter"] },
-  { id: "dairy", label: "Dairy", keys: ["milk_gallon", "butter", "cheddar", "yogurt", "sour_cream"] },
-  { id: "eggs", label: "Eggs", keys: ["eggs_dozen"] },
-  { id: "gluten", label: "Gluten", keys: ["bread", "pasta", "flour", "tortillas", "cereal", "oats", "ramen", "mac_cheese", "crackers", "cornmeal"] },
+  { id: "dairy", label: "Dairy", keys: [
+    "milk_gallon", "butter", "cheddar", "yogurt", "sour_cream",
+    "frozen_pizza", "mac_cheese", "hot_dogs"
+  ]},
+  { id: "eggs", label: "Eggs", keys: ["eggs_dozen", "mayo"] },
+  { id: "gluten", label: "Gluten", keys: [
+    "bread", "pasta", "flour", "tortillas", "cereal", "oats", "ramen",
+    "mac_cheese", "crackers", "cornmeal", "frozen_pizza"
+  ]},
   { id: "shellfish", label: "Shellfish", keys: [] },
-  { id: "soy", label: "Soy", keys: ["soy_sauce", "tofu"] }
+  { id: "soy", label: "Soy", keys: ["soy_sauce", "tofu", "hot_dogs"] }
 ];

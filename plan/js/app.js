@@ -4,6 +4,14 @@
   const STORAGE_KEY = "ai901_plan_receipts_v1";
   const CUSHION_MIN = 0.03; // aim 3–5% under budget for shelf variance
   const CUSHION_MAX = 0.05;
+  const BUDGET_MIN = 20;
+  const BUDGET_MAX = 2000;
+  const FAMILY_MIN = 1;
+  const FAMILY_MAX = 8;
+  const DAYS_MIN = 1;
+  const DAYS_MAX = 14;
+  const RECEIPT_LINE_PRICE_MAX = 500;
+  const RECEIPT_PASTE_MAX = 100000; // chars
   const prices = () => window.PRICE_TABLE.items;
 
   const state = {
@@ -16,14 +24,27 @@
     mealTypes: new Set(),
     swaps: {}, // "day-slot" -> mealId
     lastPlan: null,
-    extrasAdded: false
+    extrasAdded: false,
+    notices: []
   };
 
   function money(n) {
-    return "$" + (Math.round(n * 100) / 100).toFixed(2);
+    const x = Number(n);
+    if (!Number.isFinite(x) || x < 0) return "$0.00";
+    // Guard absurd magnitudes that round to Infinity (e.g. 1e308)
+    if (x > 1e12) return "$0.00";
+    const v = Math.round(x * 100) / 100;
+    if (!Number.isFinite(v)) return "$0.00";
+    return "$" + v.toFixed(2);
   }
   function clamp(n, a, b) {
     return Math.max(a, Math.min(b, n));
+  }
+  /** Treat 0 as a real value (unlike `x || fallback`). */
+  function numOr(val, fallback) {
+    if (val === null || val === undefined || val === "") return fallback;
+    const n = Number(val);
+    return Number.isFinite(n) ? n : fallback;
   }
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({
@@ -97,26 +118,39 @@
     return true;
   }
 
-  function poolFor(slot, tierMax, types, preferKid, allergyKeys) {
+  /**
+   * Allergy-safe pool only. NEVER falls back to meals that contain selected allergens.
+   * When meal-type tags match nothing, keep allergy-safe meals and set meta.typeRelaxed.
+   */
+  function poolFor(slot, tierMax, types, preferKid, allergyKeys, meta) {
+    const allergySafe = (m) => !mealContainsAllergen(m, allergyKeys || new Set());
     let pool = (window.MEAL_CATALOG[slot] || []).filter((m) => m.tier <= tierMax);
     if (allergyKeys && allergyKeys.size) {
-      const safe = pool.filter((m) => !mealContainsAllergen(m, allergyKeys));
-      if (safe.length) pool = safe;
-      else pool = pool.filter((m) => !mealContainsAllergen(m, allergyKeys));
+      pool = pool.filter(allergySafe);
     }
     if (types && types.size) {
       const filtered = pool.filter((m) => mealMatchesTypes(m, types));
-      if (filtered.length) pool = filtered;
+      if (filtered.length) {
+        pool = filtered;
+      } else if (pool.length) {
+        if (meta) meta.typeRelaxed = true;
+        // keep allergy-safe pool (closest match) — do not drop to allergenic meals
+      }
     }
     if (preferKid) {
       const kids = pool.filter((m) => (m.tags || []).includes("kid"));
       if (kids.length) pool = kids;
     }
     if (!pool.length) {
-      // last resort: any meal without allergens, else cheapest tier
-      pool = (window.MEAL_CATALOG[slot] || []).filter((m) => !mealContainsAllergen(m, allergyKeys || new Set()));
+      // Widen tier, still allergy-hard: never serve an allergen meal
+      pool = (window.MEAL_CATALOG[slot] || []).filter(allergySafe);
+      if (types && types.size) {
+        const filtered = pool.filter((m) => mealMatchesTypes(m, types));
+        if (filtered.length) pool = filtered;
+        else if (pool.length && meta) meta.typeRelaxed = true;
+      }
     }
-    if (!pool.length) pool = (window.MEAL_CATALOG[slot] || []).filter((m) => m.tier <= 1);
+    // Empty pool is allowed — caller shows fewer meals + shortfall message
     return pool;
   }
 
@@ -130,18 +164,26 @@
     return out;
   }
 
+  function emptyCost() {
+    return { total: 0, lines: [], skipped: [] };
+  }
+
   function assemble(breakfasts, lunches, dinners, scale, pantryKeys) {
     const daysOut = [];
     const shopMap = {};
     let mealTotal = 0;
     const days = Math.max(breakfasts.length, lunches.length, dinners.length);
+    let missingSlots = 0;
     for (let d = 0; d < days; d++) {
-      const b = breakfasts[d];
-      const l = lunches[d];
-      const din = dinners[d];
-      const bc = mealCost(b, scale, pantryKeys);
-      const lc = mealCost(l, scale, pantryKeys);
-      const dc = mealCost(din, scale, pantryKeys);
+      const b = breakfasts[d] || null;
+      const l = lunches[d] || null;
+      const din = dinners[d] || null;
+      if (!b) missingSlots++;
+      if (!l) missingSlots++;
+      if (!din) missingSlots++;
+      const bc = b ? mealCost(b, scale, pantryKeys) : emptyCost();
+      const lc = l ? mealCost(l, scale, pantryKeys) : emptyCost();
+      const dc = din ? mealCost(din, scale, pantryKeys) : emptyCost();
       mealTotal += bc.total + lc.total + dc.total;
       [bc, lc, dc].forEach((block) => {
         block.lines.forEach((line) => {
@@ -152,13 +194,13 @@
       });
       daysOut.push({
         day: d + 1,
-        breakfast: { id: b.id, name: b.name, cost: bc.total, tags: b.tags || [] },
-        lunch: { id: l.id, name: l.name, cost: lc.total, tags: l.tags || [] },
-        dinner: { id: din.id, name: din.name, cost: dc.total, tags: din.tags || [] },
+        breakfast: b ? { id: b.id, name: b.name, cost: bc.total, tags: b.tags || [] } : null,
+        lunch: l ? { id: l.id, name: l.name, cost: lc.total, tags: l.tags || [] } : null,
+        dinner: din ? { id: din.id, name: din.name, cost: dc.total, tags: din.tags || [] } : null,
         dayTotal: bc.total + lc.total + dc.total
       });
     }
-    return { daysOut, shopMap, mealTotal };
+    return { daysOut, shopMap, mealTotal, missingSlots };
   }
 
   function applySwaps(breakfasts, lunches, dinners) {
@@ -246,9 +288,28 @@
    * Auto-downgrades meals/portions when needed.
    */
   function buildPlan(opts) {
-    const budget = clamp(Number(opts.budget) || state.budget, 20, 2000);
-    const family = clamp(Math.round(Number(opts.family) || state.family), 1, 16);
-    const days = clamp(Math.round(Number(opts.days) || state.days), 1, 14);
+    opts = opts || {};
+    const notices = [];
+    const rawBudget = numOr(opts.budget, state.budget);
+    const rawFamily = numOr(opts.family, state.family);
+    const rawDays = numOr(opts.days, state.days);
+
+    const budget = clamp(rawBudget, BUDGET_MIN, BUDGET_MAX);
+    const family = clamp(Math.round(rawFamily), FAMILY_MIN, FAMILY_MAX);
+    const days = clamp(Math.round(rawDays), DAYS_MIN, DAYS_MAX);
+
+    if (Number.isFinite(rawBudget) && rawBudget < BUDGET_MIN) {
+      notices.push("Our smallest plan for this family is $" + BUDGET_MIN + "; here's that plan.");
+    } else if (Number.isFinite(rawBudget) && rawBudget > BUDGET_MAX) {
+      notices.push("Largest budget we can plan is $" + BUDGET_MAX + "; here's that plan.");
+    }
+    if (Number.isFinite(rawFamily) && (rawFamily < FAMILY_MIN || rawFamily > FAMILY_MAX)) {
+      notices.push("Family size stays between " + FAMILY_MIN + " and " + FAMILY_MAX + ". Using " + family + ".");
+    }
+    if (Number.isFinite(rawDays) && (rawDays < DAYS_MIN || rawDays > DAYS_MAX)) {
+      notices.push("Days stay between " + DAYS_MIN + " and " + DAYS_MAX + ". Using " + days + ".");
+    }
+
     const store = (opts.store || state.store || "any store").trim() || "any store";
     const types = opts.mealTypes || state.mealTypes;
     const pantryKeys = opts.pantryKeys || pantryKeySet();
@@ -271,11 +332,12 @@
     const preferKid = types.has("kid");
     let scale = (family / 4) * portion;
     let seed = family * 7 + days;
+    const poolMeta = { typeRelaxed: false };
 
     function sequences(tMax) {
-      const bPool = poolFor("breakfast", tMax, types, preferKid, allergyKeys);
-      const lPool = poolFor("lunch", tMax, types, preferKid, allergyKeys);
-      const dPool = poolFor("dinner", tMax, types, preferKid, allergyKeys);
+      const bPool = poolFor("breakfast", tMax, types, preferKid, allergyKeys, poolMeta);
+      const lPool = poolFor("lunch", tMax, types, preferKid, allergyKeys, poolMeta);
+      const dPool = poolFor("dinner", tMax, types, preferKid, allergyKeys, poolMeta);
       let breakfasts = pickSequence(bPool, days, seed);
       let lunches = pickSequence(lPool, days, seed + 3);
       let dinners = pickSequence(dPool, days, seed + 9);
@@ -294,16 +356,16 @@
       } else if (tierMax > 1) {
         tierMax -= 1;
       } else {
-        // force cheapest-only pools
+        // force cheapest-only pools — still allergy-hard; never widen to allergen meals
         const cheapTypes = new Set(types);
         cheapTypes.add("cheap");
-        const bPool = poolFor("breakfast", 1, cheapTypes.size ? cheapTypes : new Set(["cheap"]), false, allergyKeys);
-        const lPool = poolFor("lunch", 1, cheapTypes.size ? cheapTypes : new Set(["cheap"]), false, allergyKeys);
-        const dPool = poolFor("dinner", 1, cheapTypes.size ? cheapTypes : new Set(["cheap"]), false, allergyKeys);
+        const bPool = poolFor("breakfast", 1, cheapTypes, false, allergyKeys, poolMeta);
+        const lPool = poolFor("lunch", 1, cheapTypes, false, allergyKeys, poolMeta);
+        const dPool = poolFor("dinner", 1, cheapTypes, false, allergyKeys, poolMeta);
         seq = applySwaps(
-          pickSequence(bPool.length ? bPool : window.MEAL_CATALOG.breakfast.filter((m) => m.tier === 1), days, seed),
-          pickSequence(lPool.length ? lPool : window.MEAL_CATALOG.lunch.filter((m) => m.tier === 1), days, seed + 3),
-          pickSequence(dPool.length ? dPool : window.MEAL_CATALOG.dinner.filter((m) => m.tier === 1), days, seed + 9)
+          pickSequence(bPool, days, seed),
+          pickSequence(lPool, days, seed + 3),
+          pickSequence(dPool, days, seed + 9)
         );
         scale = (family / 4) * Math.max(0.65, portion * 0.85);
         plan = assemble(seq.breakfasts, seq.lunches, seq.dinners, scale, pantryKeys);
@@ -429,6 +491,20 @@
 
     const skippedPantry = state.pantry.size;
     const wellUnder = remaining > budget * 0.08; // more than ~8% left
+
+    const expectedSlots = days * 3;
+    const filledSlots = plan.daysOut.reduce((n, d) => {
+      return n + (d.breakfast ? 1 : 0) + (d.lunch ? 1 : 0) + (d.dinner ? 1 : 0);
+    }, 0);
+    const allergyShortfall = allergyKeys.size > 0 && filledSlots < expectedSlots;
+    if (allergyShortfall) {
+      notices.push("We couldn't build a full plan with these allergies. Try fewer picks or a bigger budget.");
+    }
+    if (poolMeta.typeRelaxed && types && types.size) {
+      const labels = Array.from(types).join(" + ");
+      notices.push("Couldn't combine " + labels + " — showing closest ideas.");
+    }
+
     return {
       store,
       budget,
@@ -450,6 +526,14 @@
       wellUnder,
       extrasAdded: doExtras,
       underBudget: total <= budget + 0.001,
+      notices,
+      allergyShortfall,
+      typeRelaxed: !!poolMeta.typeRelaxed,
+      filledSlots,
+      expectedSlots,
+      rawBudget,
+      rawFamily,
+      rawDays,
       asOf: (window.PRICE_TABLE.meta && window.PRICE_TABLE.meta.asOf) || "week of Nov 2, 2026"
     };
   }
@@ -478,17 +562,19 @@
       store: (fields.store || "").trim() || "any store",
       budget: fields.budget != null && fields.budget !== "" ? Number(fields.budget) : null,
       family: fields.family != null && fields.family !== "" ? Number(fields.family) : null,
-      days: fields.days != null && fields.days !== "" ? Number(fields.days) : null
+      days: fields.days != null && fields.days !== "" ? Number(fields.days) : null,
+      notices: []
     };
     const t = (text || "").trim();
     if (t) {
-      const budgetMatch = t.match(/\$\s*([\d,]+(?:\.\d+)?)/) || t.match(/\b([\d,]+(?:\.\d+)?)\s*(?:dollars|bucks)\b/i);
+      // Allow $0 / negative so clamps can tell the truth
+      const budgetMatch = t.match(/\$\s*(-?[\d,]+(?:\.\d+)?)/) || t.match(/\b(-?[\d,]+(?:\.\d+)?)\s*(?:dollars|bucks)\b/i);
       if (budgetMatch) out.budget = parseFloat(budgetMatch[1].replace(/,/g, ""));
-      const famMatch = t.match(/family\s*(?:of\s*)?(\d+)/i) || t.match(/(\d+)\s*(?:people|persons|kids|of us)/i);
+      const famMatch = t.match(/family\s*(?:of\s*)?(-?\d+)/i) || t.match(/(-?\d+)\s*(?:people|persons|kids|of us)/i);
       if (famMatch) out.family = parseInt(famMatch[1], 10);
-      const daysMatch = t.match(/(\d+)\s*days?/i) || t.match(/for\s+a\s+(week|weekend)/i);
+      const daysMatch = t.match(/(-?\d+)\s*days?/i) || t.match(/for\s+a\s+(week|weekend)/i);
       if (daysMatch) {
-        if (daysMatch[1] && /^\d+$/.test(daysMatch[1])) out.days = parseInt(daysMatch[1], 10);
+        if (daysMatch[1] && /^-?\d+$/.test(daysMatch[1])) out.days = parseInt(daysMatch[1], 10);
         else if (/week/i.test(daysMatch[1] || "")) out.days = 7;
         else if (/weekend/i.test(daysMatch[1] || "")) out.days = 2;
       }
@@ -499,12 +585,30 @@
         if (s && !/^(i|we|my|our|have|need)$/i.test(s)) out.store = s;
       }
     }
-    if (out.budget == null || isNaN(out.budget)) out.budget = state.budget;
-    if (out.family == null || isNaN(out.family)) out.family = state.family;
-    if (out.days == null || isNaN(out.days)) out.days = state.days;
-    out.family = clamp(Math.round(out.family), 1, 16);
-    out.days = clamp(Math.round(out.days), 1, 14);
-    out.budget = clamp(out.budget, 20, 2000);
+    if (out.budget == null || !Number.isFinite(out.budget)) out.budget = state.budget;
+    if (out.family == null || !Number.isFinite(out.family)) out.family = state.family;
+    if (out.days == null || !Number.isFinite(out.days)) out.days = state.days;
+
+    const rawBudget = out.budget;
+    const rawFamily = out.family;
+    const rawDays = out.days;
+    out.family = clamp(Math.round(out.family), FAMILY_MIN, FAMILY_MAX);
+    out.days = clamp(Math.round(out.days), DAYS_MIN, DAYS_MAX);
+    out.budget = clamp(out.budget, BUDGET_MIN, BUDGET_MAX);
+    if (rawBudget < BUDGET_MIN) {
+      out.notices.push("Our smallest plan for this family is $" + BUDGET_MIN + "; here's that plan.");
+    } else if (rawBudget > BUDGET_MAX) {
+      out.notices.push("Largest budget we can plan is $" + BUDGET_MAX + "; here's that plan.");
+    }
+    if (rawFamily < FAMILY_MIN || rawFamily > FAMILY_MAX) {
+      out.notices.push("Family size stays between " + FAMILY_MIN + " and " + FAMILY_MAX + ". Using " + out.family + ".");
+    }
+    if (rawDays < DAYS_MIN || rawDays > DAYS_MAX) {
+      out.notices.push("Days stay between " + DAYS_MIN + " and " + DAYS_MAX + ". Using " + out.days + ".");
+    }
+    out.rawBudget = rawBudget;
+    out.rawFamily = rawFamily;
+    out.rawDays = rawDays;
     if (!out.store) out.store = "any store";
     return out;
   }
@@ -522,9 +626,18 @@
     return "Pantry & Other";
   }
 
+  function receiptLineOk(qty, price) {
+    if (!Number.isFinite(qty) || !Number.isFinite(price)) return false;
+    if (qty <= 0 || price <= 0) return false;
+    if (price > RECEIPT_LINE_PRICE_MAX) return false;
+    if (qty * price > RECEIPT_LINE_PRICE_MAX * 20) return false;
+    return true;
+  }
+
   function parseReceiptText(raw) {
-    const lines = raw.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    const lines = String(raw || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     const items = [];
+    let rejected = 0;
     const looksCsv = lines.filter((l) => l.includes(",")).length >= Math.max(1, lines.length * 0.4);
     if (looksCsv) {
       lines.forEach((line, idx) => {
@@ -539,8 +652,9 @@
           price = parseFloat(parts[parts.length - 1].replace(/[^\d.-]/g, ""));
           if (parts.length >= 3 && !isNaN(parseFloat(parts[1]))) qty = parseFloat(parts[1]);
         }
-        if (!name || isNaN(price)) return;
-        items.push({ name, qty: qty || 1, price: Math.abs(price), category: categorize(name) });
+        if (!name || !Number.isFinite(price)) { rejected++; return; }
+        if (!receiptLineOk(qty, price)) { rejected++; return; }
+        items.push({ name, qty, price, category: categorize(name) });
       });
     } else {
       lines.forEach((line) => {
@@ -553,17 +667,25 @@
         } else {
           name = m[1].trim(); price = parseFloat(m[2] || m[3]);
         }
-        if (!name || isNaN(price)) return;
-        items.push({ name, qty, price: Math.abs(price), category: categorize(name) });
+        if (!name || !Number.isFinite(price)) { rejected++; return; }
+        if (!receiptLineOk(qty, price)) { rejected++; return; }
+        items.push({ name, qty, price, category: categorize(name) });
       });
     }
-    return items;
+    return { items, rejected };
   }
 
   function loadReceipts() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (e) { return []; }
   }
-  function saveReceipts(arr) { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); }
+  function saveReceipts(arr) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
   function summarizeReceipts(trips) {
     if (!trips.length) return null;
@@ -616,21 +738,21 @@
       const id = btn.getAttribute("data-id");
       let on = false;
       if (multiSet) on = multiSet.has(id);
-      else on = id === String(activeId) || (activeId >= 9 && id === "9plus" && containerSel === "#family-chips");
+      else on = id === String(activeId);
       btn.classList.toggle("is-on", on);
       btn.setAttribute("aria-pressed", on ? "true" : "false");
     });
   }
 
   function refreshChipUI() {
-    markChipGroup("#family-chips", state.family >= 9 ? "9plus" : state.family);
+    markChipGroup("#family-chips", state.family);
     markChipGroup("#budget-chips", state.budget);
     markChipGroup("#days-chips", state.days);
     markChipGroup("#mealtype-chips", null, state.mealTypes);
     markChipGroup("#pantry-chips", null, state.pantry);
     markChipGroup("#allergy-chips", null, state.allergies);
     const plusWrap = $("#family-plus-wrap");
-    if (plusWrap) plusWrap.hidden = state.family < 9;
+    if (plusWrap) plusWrap.hidden = true;
     syncHiddenFields();
   }
 
@@ -660,6 +782,10 @@
       ? `<p class="privacy-note">Avoiding: ${plan.allergies.map(escapeHtml).join(", ")}. Meal ideas only. Always check labels for allergens.</p>`
       : `<p class="estimate-note">Meal ideas only. Always check labels for allergens.</p>`;
 
+    const noticeHtml = (plan.notices && plan.notices.length)
+      ? plan.notices.map((n) => `<p class="privacy-note" role="status">${escapeHtml(n)}</p>`).join("")
+      : "";
+
     $("#plan-summary").innerHTML = `
       <div class="summary-grid summary-grid-lg">
         <div class="stat highlight"><span class="label">Est. total</span><strong>${money(plan.total)}</strong></div>
@@ -672,6 +798,7 @@
       <p class="estimate-note">Estimated prices, week of Nov 2, 2026. Shelf price always wins.</p>
       <p class="estimate-note">${escapeHtml(leftoverNote)}${plan.downgraded ? " Meals were adjusted to fit." : ""}</p>
       ${plan.skippedPantry ? `<p class="privacy-note">Skipped ${plan.skippedPantry} item${plan.skippedPantry === 1 ? "" : "s"} you already have.</p>` : ""}
+      ${noticeHtml}
       ${allergyNote}
       <div class="btn-row">
         <a class="btn btn-secondary" href="#shopping-panel">Shopping list</a>
@@ -709,6 +836,12 @@
         <ul>
           ${["breakfast", "lunch", "dinner"].map((slot) => {
             const m = d[slot];
+            if (!m) {
+              return `<li class="meal-static meal-missing">
+                <span class="meal-tag">${slot}</span>
+                <span class="meal-name">No safe idea for this slot yet</span>
+              </li>`;
+            }
             const opts = kidSwapOptions(slot, m.id, m.cost, scale, pantryKeys)
               .filter((o) => !mealContainsAllergen(o.meal, allergyKeys));
             const canSwap = opts.length > 0;
@@ -838,6 +971,7 @@
 
   function runPlan() {
     const text = ($("#quick-input") && $("#quick-input").value) || "";
+    let quickNotices = [];
     if (text.trim()) {
       const parsed = parseQuickInput(text, {
         store: state.store,
@@ -849,6 +983,7 @@
       state.budget = parsed.budget;
       state.family = parsed.family;
       state.days = parsed.days;
+      quickNotices = parsed.notices || [];
       refreshChipUI();
     }
     const plan = buildPlan({
@@ -861,20 +996,47 @@
       allergyKeys: allergyKeySet(),
       doExtras: state.extrasAdded
     });
+    // Prefer quick-input clamp notes when present (already applied to state)
+    if (quickNotices.length) {
+      const merged = quickNotices.concat((plan.notices || []).filter((n) => !quickNotices.includes(n)));
+      plan.notices = merged;
+    }
     renderPlan(plan);
   }
 
   function ingestReceipt(raw, label) {
-    const items = parseReceiptText(raw);
+    const rawStr = String(raw || "");
+    if (rawStr.length > RECEIPT_PASTE_MAX) {
+      $("#receipt-msg").textContent = "That paste was too large. Try a shorter receipt.";
+      return;
+    }
+    const parsed = parseReceiptText(rawStr);
+    const items = parsed.items || [];
     if (!items.length) {
-      $("#receipt-msg").textContent = "Couldn't find priced lines. Try lines like: Milk,1,3.49";
+      if (parsed.rejected > 0) {
+        $("#receipt-msg").textContent = "That line looked off — check quantities and prices.";
+      } else {
+        $("#receipt-msg").textContent = "Couldn't find priced lines. Try lines like: Milk,1,3.49";
+      }
       return;
     }
     const total = items.reduce((s, it) => s + it.price * (it.qty || 1), 0);
+    if (!Number.isFinite(total) || total <= 0) {
+      $("#receipt-msg").textContent = "That line looked off — check quantities and prices.";
+      return;
+    }
     const trips = loadReceipts();
     trips.push({ id: Date.now(), label: label || "Trip", date: new Date().toISOString(), items, total });
-    saveReceipts(trips);
-    $("#receipt-msg").textContent = `Saved ${items.length} items · ${money(total)}. Your receipts stay on this phone.`;
+    const ok = saveReceipts(trips);
+    if (!ok) {
+      $("#receipt-msg").textContent = "Couldn't save on this phone — storage may be full. Try deleting old receipts.";
+      return;
+    }
+    let msg = "Saved " + items.length + " items · " + money(total) + ". Your receipts stay on this phone.";
+    if (parsed.rejected > 0) {
+      msg += " Skipped " + parsed.rejected + " odd line" + (parsed.rejected === 1 ? "" : "s") + ".";
+    }
+    $("#receipt-msg").textContent = msg;
     renderReceiptStats();
   }
 
@@ -889,29 +1051,24 @@
   }
 
   function init() {
-    // Family chips 1-8 + 9+
+    // Family chips 1-8
     buildChipRow("#family-chips", [
-      ...[1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ id: String(n), label: String(n) })),
-      { id: "9plus", label: "9+" }
+      ...[1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ id: String(n), label: String(n) }))
     ], {
       onToggle: (id) => {
-        if (id === "9plus") {
-          state.family = Math.max(9, state.family);
-        } else {
-          state.family = parseInt(id, 10);
-        }
+        state.family = clamp(parseInt(id, 10), FAMILY_MIN, FAMILY_MAX);
         state.swaps = {};
         refreshChipUI();
       }
     });
 
     $("#family-minus")?.addEventListener("click", () => {
-      state.family = clamp(state.family - 1, 9, 16);
+      state.family = clamp(state.family - 1, FAMILY_MIN, FAMILY_MAX);
       state.swaps = {};
       refreshChipUI();
     });
     $("#family-plus")?.addEventListener("click", () => {
-      state.family = clamp(state.family + 1, 9, 16);
+      state.family = clamp(state.family + 1, FAMILY_MIN, FAMILY_MAX);
       state.swaps = {};
       refreshChipUI();
     });
@@ -1044,10 +1201,44 @@
       pantryKeySet,
       allergyKeySet,
       kidSwapOptions,
-      addExtrasFill
+      addExtrasFill,
+      mealContainsAllergen,
+      poolFor,
+      FAMILY_MIN,
+      FAMILY_MAX,
+      BUDGET_MIN,
+      BUDGET_MAX,
+      RECEIPT_LINE_PRICE_MAX,
+      RECEIPT_PASTE_MAX
     };
   }
 
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
-  else init();
+  // Expose API even if DOM init is delayed (headless tests)
+  window.GroceryPlan = window.GroceryPlan || {};
+  Object.assign(window.GroceryPlan, {
+    parseQuickInput,
+    buildPlan,
+    parseReceiptText,
+    money,
+    state,
+    pantryKeySet,
+    allergyKeySet,
+    kidSwapOptions,
+    addExtrasFill,
+    mealContainsAllergen,
+    poolFor,
+    FAMILY_MIN,
+    FAMILY_MAX,
+    BUDGET_MIN,
+    BUDGET_MAX,
+    RECEIPT_LINE_PRICE_MAX,
+    RECEIPT_PASTE_MAX
+  });
+
+  if (typeof document !== "undefined" && document.querySelector) {
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+    else {
+      try { init(); } catch (e) { /* headless without full DOM */ }
+    }
+  }
 })();
