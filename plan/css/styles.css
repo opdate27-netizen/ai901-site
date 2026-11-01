@@ -297,8 +297,99 @@ input:focus, textarea:focus {
   align-items: center;
   min-height: 44px;
 }
+.shop-group li.shop-item {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px;
+}
+.shop-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 4px 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  min-height: 44px;
+  border-radius: 8px;
+}
+.shop-row:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
 .item-qty { color: var(--muted); font-size: 0.9rem; }
-.item-price { font-weight: 800; }
+.item-price { font-weight: 800; white-space: nowrap; }
+.yours-mark {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #e7f3ec;
+  color: var(--brand-dark);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  text-transform: lowercase;
+}
+.item-reset {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.35rem;
+  line-height: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.item-reset:hover,
+.item-reset:focus-visible {
+  color: var(--brand-dark);
+  background: #f3eee6;
+  outline: none;
+}
+.item-reset-spacer {
+  width: 44px;
+  height: 44px;
+  display: inline-block;
+}
+.shop-item.is-editing {
+  grid-template-columns: minmax(0, 1fr) minmax(88px, 110px);
+  gap: 8px;
+  padding: 8px 0;
+}
+.shop-edit-brand,
+.shop-edit-price {
+  display: block;
+  margin: 0;
+}
+.item-brand-input,
+.item-price-input {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 16px; /* avoid iOS zoom */
+  font-family: inherit;
+  background: #fff;
+}
+.item-price-input {
+  font-weight: 700;
+  text-align: right;
+}
+.item-price-input.is-invalid {
+  border-color: #b42318;
+  background: #fff5f4;
+}
 
 .budget-bar {
   height: 14px;

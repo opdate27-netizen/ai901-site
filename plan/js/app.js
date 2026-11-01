@@ -2,6 +2,9 @@
   "use strict";
 
   const STORAGE_KEY = "ai901_plan_receipts_v1";
+  const OVERRIDE_KEY = "ai901_plan_price_overrides_v1";
+  const CUSTOM_PRICE_MAX = 500;
+  const BRAND_MAX = 60;
   const CUSHION_MIN = 0.03; // aim 3–5% under budget for shelf variance
   const CUSHION_MAX = 0.05;
   const BUDGET_MIN = 20;
@@ -56,6 +59,77 @@
     return (Math.round(q * 100) / 100).toString();
   }
 
+  let _overrideCache = null;
+  function invalidateOverrides() { _overrideCache = null; }
+  function loadOverrides() {
+    if (_overrideCache) return _overrideCache;
+    try {
+      const raw = JSON.parse(localStorage.getItem(OVERRIDE_KEY) || "{}");
+      _overrideCache = (raw && typeof raw === "object" && !Array.isArray(raw)) ? raw : {};
+    } catch (e) {
+      _overrideCache = {};
+    }
+    return _overrideCache;
+  }
+  function saveOverrides(map) {
+    _overrideCache = map;
+    try { localStorage.setItem(OVERRIDE_KEY, JSON.stringify(map)); } catch (e) { /* quota */ }
+  }
+  /** Validate a typed price. Rejects empty, non-numeric, negative, and absurd values. */
+  function parseUserPrice(raw) {
+    if (raw === null || raw === undefined) return { ok: false, reason: "empty" };
+    const s = String(raw).trim().replace(/[$,\s]/g, "");
+    if (s === "") return { ok: false, reason: "empty" };
+    if (!/^-?\d+(\.\d+)?$/.test(s)) return { ok: false, reason: "invalid" };
+    const n = Number(s);
+    if (!Number.isFinite(n)) return { ok: false, reason: "invalid" };
+    if (n < 0) return { ok: false, reason: "negative" };
+    if (n > CUSTOM_PRICE_MAX) return { ok: false, reason: "too_high" };
+    return { ok: true, price: Math.round(n * 100) / 100 };
+  }
+  function getOverride(id) {
+    const ov = loadOverrides()[id];
+    if (!ov || typeof ov !== "object") return null;
+    const price = Number(ov.price);
+    if (!Number.isFinite(price) || price < 0) return null;
+    const brand = typeof ov.brand === "string" ? ov.brand.trim().slice(0, BRAND_MAX) : "";
+    return { brand, price };
+  }
+  function setOverride(id, brand, price) {
+    const parsed = parseUserPrice(price);
+    if (!parsed.ok) return parsed;
+    const all = Object.assign({}, loadOverrides());
+    all[id] = {
+      brand: String(brand || "").trim().slice(0, BRAND_MAX),
+      price: parsed.price
+    };
+    saveOverrides(all);
+    return { ok: true, override: all[id] };
+  }
+  function clearOverride(id) {
+    const all = Object.assign({}, loadOverrides());
+    if (!(id in all)) return false;
+    delete all[id];
+    saveOverrides(all);
+    return true;
+  }
+  function effectivePrice(id) {
+    const item = prices()[id];
+    if (!item) return null;
+    const ov = getOverride(id);
+    return ov ? ov.price : item.price;
+  }
+  function displayName(id, fallbackName) {
+    const ov = getOverride(id);
+    if (ov && ov.brand) return ov.brand;
+    if (fallbackName) return fallbackName;
+    const item = prices()[id];
+    return item ? item.name : id;
+  }
+  function hasCustomPrice(id) {
+    return !!getOverride(id);
+  }
+
   function pantryKeySet() {
     const keys = new Set();
     (window.PANTRY_CHIPS || []).forEach((chip) => {
@@ -98,13 +172,24 @@
       const item = table[ing.id];
       if (!item) return;
       const qty = ing.qty * scale;
+      const name = displayName(ing.id, item.name);
       if (pantryKeys.has(ing.id)) {
-        skipped.push({ id: ing.id, name: item.name, qty });
+        skipped.push({ id: ing.id, name, qty });
         return;
       }
-      const cost = item.price * qty;
+      const unitPrice = effectivePrice(ing.id);
+      const cost = unitPrice * qty;
       total += cost;
-      lines.push({ id: ing.id, name: item.name, unit: item.unit, cat: item.cat, qty, price: item.price, cost });
+      lines.push({
+        id: ing.id,
+        name,
+        unit: item.unit,
+        cat: item.cat,
+        qty,
+        price: unitPrice,
+        cost,
+        custom: hasCustomPrice(ing.id)
+      });
     });
     return { total, lines, skipped };
   }
@@ -231,14 +316,17 @@
       } else {
         buyQty = Math.max(0.1, Math.round(line.qty * 10) / 10);
       }
+      const unitPrice = effectivePrice(line.id);
+      const price = unitPrice == null ? line.price : unitPrice;
       return {
         id: line.id,
-        name: line.name,
+        name: displayName(line.id, line.name),
         unit: line.unit,
         cat: line.cat,
         qty: buyQty,
-        price: line.price,
-        cost: buyQty * line.price
+        price,
+        cost: buyQty * price,
+        custom: hasCustomPrice(line.id)
       };
     });
     shopping.sort((a, b) => a.cat.localeCompare(b.cat) || a.name.localeCompare(b.name));
@@ -442,22 +530,35 @@
         if (allergyKeys.has(id)) return;
         const item = table[id];
         if (!item) return;
+        const unitPrice = effectivePrice(id);
         const room = fillCap - plan.mealTotal;
-        if (room < item.price * 0.95) return;
+        if (room < unitPrice * 0.95) return;
         if (!doExtras && pass > 0 && room > budget * 0.12) return; // leave headroom unless user asked for extras
         const cap = fillCaps[id] || 1;
         const have = plan.shopMap[id] ? plan.shopMap[id].qty : 0;
         if (have >= cap + (pass > 1 ? cap : 0)) return;
         let addQty = 1;
-        if (item.unit === "lb" && room > item.price * 2) addQty = Math.min(2, Math.floor(room / item.price));
-        if (plan.mealTotal + item.price * addQty > fillCap) addQty = 1;
-        if (plan.mealTotal + item.price * addQty > fillCap) return;
+        if (item.unit === "lb" && room > unitPrice * 2) addQty = Math.min(2, Math.floor(room / unitPrice));
+        if (plan.mealTotal + unitPrice * addQty > fillCap) addQty = 1;
+        if (plan.mealTotal + unitPrice * addQty > fillCap) return;
         if (!plan.shopMap[id]) {
-          plan.shopMap[id] = { id, name: item.name, unit: item.unit, cat: item.cat, qty: 0, price: item.price, cost: 0 };
+          plan.shopMap[id] = {
+            id,
+            name: displayName(id, item.name),
+            unit: item.unit,
+            cat: item.cat,
+            qty: 0,
+            price: unitPrice,
+            cost: 0,
+            custom: hasCustomPrice(id)
+          };
         }
         plan.shopMap[id].qty += addQty;
-        plan.shopMap[id].cost += item.price * addQty;
-        plan.mealTotal += item.price * addQty;
+        plan.shopMap[id].cost += unitPrice * addQty;
+        plan.shopMap[id].price = unitPrice;
+        plan.shopMap[id].name = displayName(id, item.name);
+        plan.shopMap[id].custom = hasCustomPrice(id);
+        plan.mealTotal += unitPrice * addQty;
         added = true;
       });
       if (!added) break;
@@ -874,22 +975,129 @@
       <div class="shop-group">
         <h3>${escapeHtml(cat)}</h3>
         <ul>
-          ${plan.grouped[cat].map((it) => `
-            <li>
-              <span class="item-name">${escapeHtml(it.name)}</span>
-              <span class="item-qty">${formatQty(it.qty)} ${escapeHtml(it.unit)}</span>
-              <span class="item-price">${money(it.cost)}</span>
-            </li>
-          `).join("")}
+          ${plan.grouped[cat].map((it) => {
+            const custom = !!it.custom || hasCustomPrice(it.id);
+            const yours = custom ? `<span class="yours-mark" title="Your price">yours</span>` : "";
+            const reset = custom
+              ? `<button type="button" class="item-reset" data-id="${escapeHtml(it.id)}" aria-label="Reset to estimate">×</button>`
+              : `<span class="item-reset-spacer" aria-hidden="true"></span>`;
+            return `
+            <li class="shop-item${custom ? " is-custom" : ""}" data-id="${escapeHtml(it.id)}" data-unit-price="${it.price}" data-default-name="${escapeHtml((prices()[it.id] && prices()[it.id].name) || it.name)}">
+              <button type="button" class="shop-row" data-id="${escapeHtml(it.id)}" aria-label="Edit brand and price for ${escapeHtml(it.name)}">
+                <span class="item-name">${escapeHtml(it.name)}${yours}</span>
+                <span class="item-qty">${formatQty(it.qty)} ${escapeHtml(it.unit)}</span>
+                <span class="item-price">${money(it.cost)}</span>
+              </button>
+              ${reset}
+            </li>`;
+          }).join("")}
         </ul>
       </div>
     `).join("") : `<p class="muted">Nothing to buy — you already have what this plan needs.</p>`;
+
+    bindShoppingPriceEdits();
 
     $("#meal-plan").querySelectorAll(".meal-tap").forEach((btn) => {
       btn.addEventListener("click", () => openSwapSheet(btn, scale, pantryKeys, allergyKeys));
     });
 
     results.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function bindShoppingPriceEdits() {
+    const root = $("#shopping-list");
+    if (!root) return;
+    root.querySelectorAll(".shop-row").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const li = btn.closest(".shop-item");
+        if (li) beginShopEdit(li);
+      });
+    });
+    root.querySelectorAll(".item-reset").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = btn.getAttribute("data-id");
+        if (!id) return;
+        clearOverride(id);
+        runPlan();
+      });
+    });
+  }
+
+  function beginShopEdit(li) {
+    if (!li || li.classList.contains("is-editing")) return;
+    const id = li.getAttribute("data-id");
+    if (!id) return;
+    const ov = getOverride(id);
+    const tableItem = prices()[id];
+    const brandVal = ov && ov.brand ? ov.brand : "";
+    const priceVal = ov ? ov.price : (tableItem ? tableItem.price : effectivePrice(id));
+    li.classList.add("is-editing");
+    li.innerHTML = `
+      <label class="shop-edit-brand">
+        <span class="sr-only">Brand or product</span>
+        <input type="text" class="item-brand-input" maxlength="${BRAND_MAX}" placeholder="Brand / product" value="${escapeHtml(brandVal)}" autocomplete="off" />
+      </label>
+      <label class="shop-edit-price">
+        <span class="sr-only">Your price</span>
+        <input type="text" class="item-price-input" inputmode="decimal" placeholder="Price" value="${escapeHtml(String(priceVal))}" autocomplete="off" />
+      </label>
+    `;
+    const brandInput = li.querySelector(".item-brand-input");
+    const priceInput = li.querySelector(".item-price-input");
+    let saved = false;
+    const finish = (commit) => {
+      if (saved) return;
+      saved = true;
+      if (commit) {
+        const parsed = parseUserPrice(priceInput.value);
+        if (!parsed.ok) {
+          // Invalid: leave edit open and restore focus; allow retry
+          saved = false;
+          priceInput.classList.add("is-invalid");
+          priceInput.focus();
+          return;
+        }
+        setOverride(id, brandInput.value, parsed.price);
+        runPlan();
+        return;
+      }
+      // Cancel (empty price blur): just re-render current plan view
+      if (state.lastPlan) renderPlan(state.lastPlan);
+      else runPlan();
+    };
+    const onKey = (ev) => {
+      if (ev.key === "Enter") {
+        ev.preventDefault();
+        finish(true);
+      } else if (ev.key === "Escape") {
+        ev.preventDefault();
+        saved = true;
+        if (state.lastPlan) renderPlan(state.lastPlan);
+        else runPlan();
+      }
+    };
+    brandInput.addEventListener("keydown", onKey);
+    priceInput.addEventListener("keydown", onKey);
+    // Blur save when focus leaves both fields
+    const maybeBlurSave = () => {
+      setTimeout(() => {
+        if (saved) return;
+        const active = document.activeElement;
+        if (active === brandInput || active === priceInput) return;
+        if (String(priceInput.value || "").trim() === "") {
+          finish(false);
+          return;
+        }
+        finish(true);
+      }, 0);
+    };
+    brandInput.addEventListener("blur", maybeBlurSave);
+    priceInput.addEventListener("blur", maybeBlurSave);
+    priceInput.focus();
+    priceInput.select();
   }
 
   function openSwapSheet(btn, scale, pantryKeys, allergyKeys) {
@@ -1204,12 +1412,23 @@
       addExtrasFill,
       mealContainsAllergen,
       poolFor,
+      parseUserPrice,
+      getOverride,
+      setOverride,
+      clearOverride,
+      effectivePrice,
+      displayName,
+      hasCustomPrice,
+      loadOverrides,
+      invalidateOverrides,
+      OVERRIDE_KEY,
       FAMILY_MIN,
       FAMILY_MAX,
       BUDGET_MIN,
       BUDGET_MAX,
       RECEIPT_LINE_PRICE_MAX,
-      RECEIPT_PASTE_MAX
+      RECEIPT_PASTE_MAX,
+      CUSTOM_PRICE_MAX
     };
   }
 
@@ -1227,12 +1446,23 @@
     addExtrasFill,
     mealContainsAllergen,
     poolFor,
+    parseUserPrice,
+    getOverride,
+    setOverride,
+    clearOverride,
+    effectivePrice,
+    displayName,
+    hasCustomPrice,
+    loadOverrides,
+    invalidateOverrides,
+    OVERRIDE_KEY,
     FAMILY_MIN,
     FAMILY_MAX,
     BUDGET_MIN,
     BUDGET_MAX,
     RECEIPT_LINE_PRICE_MAX,
-    RECEIPT_PASTE_MAX
+    RECEIPT_PASTE_MAX,
+    CUSTOM_PRICE_MAX
   });
 
   if (typeof document !== "undefined" && document.querySelector) {
