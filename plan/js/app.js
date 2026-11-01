@@ -980,7 +980,7 @@
             const yours = custom ? `<span class="yours-mark" title="Your price">yours</span>` : "";
             const reset = custom
               ? `<button type="button" class="item-reset" data-id="${escapeHtml(it.id)}" aria-label="Reset to estimate">×</button>`
-              : `<span class="item-reset-spacer" aria-hidden="true"></span>`;
+              : "";
             return `
             <li class="shop-item${custom ? " is-custom" : ""}" data-id="${escapeHtml(it.id)}" data-unit-price="${it.price}" data-default-name="${escapeHtml((prices()[it.id] && prices()[it.id].name) || it.name)}">
               <button type="button" class="shop-row" data-id="${escapeHtml(it.id)}" aria-label="Edit brand and price for ${escapeHtml(it.name)}">
