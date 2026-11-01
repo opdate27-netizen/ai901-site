@@ -990,19 +990,34 @@
     const grouped = window.ListTools ? window.ListTools.groupByCat(shopItems) : plan.grouped;
     const cats = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
     const checkedMap = window.ListTools ? window.ListTools.loadChecked() : {};
-    $("#shopping-list").innerHTML = cats.length ? cats.map((cat) => `
+    const addMoreBlock = `
+      <div class="shop-add-more" id="shop-add-more">
+        <label for="shop-add-more-input">${escapeHtml(tt("shop.add.more"))}</label>
+        <input id="shop-add-more-input" type="text" placeholder="${escapeHtml(tt("shop.add.more.placeholder"))}" autocomplete="off" />
+        <div id="shop-extras-chips-inline" class="chip-row extras-chips"></div>
+      </div>`;
+    let listHtml = "";
+    if (!cats.length) {
+      listHtml = `<p class="muted">${escapeHtml(tt("shop.empty"))}</p>` + addMoreBlock;
+    } else {
+      let inserted = false;
+      listHtml = cats.map((cat) => {
+        const block = `
       <div class="shop-group">
         <h3>${escapeHtml(tCat(cat))}</h3>
         <ul>
           ${grouped[cat].map((it) => {
-            const custom = !!it.custom || hasCustomPrice(it.id);
+            const custom = !!it.custom || hasCustomPrice(it.id) || !!it.customExtra;
             const yours = custom ? `<span class="yours-mark" title="${escapeHtml(tt("shop.yoursTitle"))}">${escapeHtml(tt("shop.yours"))}</span>` : "";
-            const reset = custom
+            const reset = hasCustomPrice(it.id)
               ? `<button type="button" class="item-reset" data-id="${escapeHtml(it.id)}" aria-label="${escapeHtml(tt("shop.resetAria"))}">×</button>`
               : "";
             const isChecked = !!checkedMap[it.id];
+            const rem = it.customExtra
+              ? `<button type="button" class="item-reset extra-remove" data-extra-id="${escapeHtml(it.id)}" aria-label="Remove">×</button>`
+              : "";
             return `
-            <li class="shop-item${custom ? " is-custom" : ""}${isChecked ? " is-checked" : ""}" data-id="${escapeHtml(it.id)}" data-unit-price="${it.price}" data-default-name="${escapeHtml((prices()[it.id] && prices()[it.id].name) || it.name)}">
+            <li class="shop-item${custom ? " is-custom" : ""}${isChecked ? " is-checked" : ""}${it.customExtra ? " is-extra" : ""}" data-id="${escapeHtml(it.id)}" data-unit-price="${it.price}" data-default-name="${escapeHtml((prices()[it.id] && prices()[it.id].name) || it.name)}">
               <label class="shop-check">
                 <input type="checkbox" class="item-bought" data-id="${escapeHtml(it.id)}" ${isChecked ? "checked" : ""} aria-label="Purchased" />
               </label>
@@ -1011,12 +1026,22 @@
                 <span class="item-qty">${formatQty(it.qty)} ${escapeHtml(it.unit)}</span>
                 <span class="item-price">${money(it.cost)}</span>
               </button>
-              ${reset}
+              ${reset}${rem}
             </li>`;
           }).join("")}
         </ul>
-      </div>
-    `).join("") : `<p class="muted">${escapeHtml(tt("shop.empty"))}</p>`;
+      </div>`;
+        // After Produce (or after final group if no Produce)
+        if (cat === "Produce") {
+          inserted = true;
+          return block + addMoreBlock;
+        }
+        return block;
+      }).join("");
+      if (!inserted) listHtml += addMoreBlock;
+    }
+    $("#shopping-list").innerHTML = listHtml;
+    renderExtrasChips();
 
     // View toggle active state
     document.querySelectorAll("[data-shop-view]").forEach((btn) => {
@@ -1025,6 +1050,8 @@
 
     bindShoppingPriceEdits();
     bindShoppingChecks();
+    bindExtraRemoves();
+    bindAddMoreInput();
 
     $("#meal-plan").querySelectorAll(".meal-tap").forEach((btn) => {
       btn.addEventListener("click", () => openSwapSheet(btn, scale, pantryKeys, allergyKeys));
@@ -1189,15 +1216,19 @@
       <div class="season-badge">${escapeHtml(title)}</div>
       <p class="season-blurb">${escapeHtml(blurb)}</p>
       <div class="recipe-grid">
-        ${season.recipes.map((r) => `
+        ${season.recipes.map((r) => {
+          const name = r.id ? tMeal(r.id, r.name) : r.name;
+          const note = (window.I18N && window.I18N.mealNote && r.id) ? (window.I18N.mealNote(r.id, r.notes) || r.notes) : r.notes;
+          const meals = r.meals || 2;
+          return `
           <article class="recipe-card">
-            <h3>${escapeHtml(r.name)}</h3>
-            <p class="recipe-meta">Serves ~${r.serves} · Est. ${money(r.cost)}</p>
-            <p>${escapeHtml(r.notes)}</p>
-          </article>
-        `).join("")}
+            <h3>${escapeHtml(name)}</h3>
+            <p class="recipe-meta">Serves ~${r.serves} · ~${meals} meals · Est. ${money(r.cost)}</p>
+            <p>${escapeHtml(note)}</p>
+          </article>`;
+        }).join("")}
       </div>
-      <p class="estimate-note">Estimated prices, week of Nov 2, 2026. Shelf price always wins.</p>
+      <p class="estimate-note">${escapeHtml(tt("note.estimates"))}</p>
     `;
   }
 
@@ -1305,6 +1336,118 @@
     ).join("");
     el.querySelectorAll(".chip").forEach((btn) => {
       btn.addEventListener("click", () => onToggle(btn.getAttribute("data-id"), btn));
+    });
+  }
+
+
+  function renderExtrasChips() {
+    const extras = window.ListTools ? window.ListTools.loadExtras() : [];
+    const html = extras.map((ex) => `
+      <button type="button" class="chip extra-chip" data-extra-id="${escapeHtml(ex.id)}">${escapeHtml(ex.name)} ×</button>
+    `).join("");
+    document.querySelectorAll("#shop-extras-chips, #shop-extras-chips-inline").forEach((el) => {
+      el.innerHTML = html;
+      el.querySelectorAll("[data-extra-id]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          removeExtraId(btn.getAttribute("data-extra-id"));
+        });
+      });
+    });
+  }
+
+  function removeExtraId(id) {
+    if (!window.ListTools || !id) return;
+    const extras = window.ListTools.loadExtras().filter((ex) => ex.id !== id);
+    window.ListTools.saveExtras(extras);
+    if (state.lastPlan) renderPlan(state.lastPlan);
+    else renderExtrasChips();
+  }
+
+  function bindExtraRemoves() {
+    document.querySelectorAll(".extra-remove").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        removeExtraId(btn.getAttribute("data-extra-id"));
+      });
+    });
+  }
+
+  function addSharedExtra(rawName) {
+    if (!window.ListTools) return;
+    const name = String(rawName || "").trim();
+    if (!name) return;
+    const res = window.ListTools.addExtraByName(name);
+    if (state.lastPlan) renderPlan(state.lastPlan);
+    else renderExtrasChips();
+    return res;
+  }
+
+  function bindAddMoreInput() {
+    const input = $("#shop-add-more-input");
+    if (!input || input.dataset.bound === "1") return;
+    input.dataset.bound = "1";
+    input.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      const val = input.value;
+      input.value = "";
+      addSharedExtra(val);
+      // re-focus after re-render
+      requestAnimationFrame(() => {
+        const again = $("#shop-add-more-input");
+        if (again) again.focus();
+      });
+    });
+  }
+
+  function bindShopToolsOnce() {
+    if (bindShopToolsOnce.done) return;
+    bindShopToolsOnce.done = true;
+    document.querySelectorAll("[data-shop-view]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (!window.ListTools) return;
+        window.ListTools.saveView(btn.getAttribute("data-shop-view") || "all");
+        if (state.lastPlan) renderPlan(state.lastPlan);
+      });
+    });
+    const addBtn = $("#shop-add-btn");
+    const addInput = $("#shop-add-input");
+    const doAdd = () => {
+      if (!addInput) return;
+      const val = addInput.value;
+      addInput.value = "";
+      addSharedExtra(val);
+    };
+    addBtn?.addEventListener("click", doAdd);
+    addInput?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); doAdd(); }
+    });
+    const helperForm = $("#shop-helper-form");
+    helperForm?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!window.ListTools) return;
+      const input = $("#shop-helper-input");
+      const text = input ? input.value : "";
+      const res = window.ListTools.handleHelper(text, state.lastPlan);
+      if (input) input.value = "";
+      const reply = $("#shop-helper-reply");
+      if (reply) {
+        reply.hidden = false;
+        reply.textContent = res.reply || "";
+      }
+      const chips = $("#shop-helper-chips");
+      if (chips) {
+        chips.innerHTML = (res.suggestions || []).map((s) =>
+          `<button type="button" class="chip" data-suggest-id="${escapeHtml(s.id)}">${escapeHtml(s.name)}</button>`
+        ).join("");
+        chips.querySelectorAll("[data-suggest-id]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            addSharedExtra(btn.textContent);
+          });
+        });
+      }
+      if (res.changed && state.lastPlan) renderPlan(state.lastPlan);
     });
   }
 
@@ -1449,6 +1592,9 @@
       $("#receipt-msg").textContent = "All receipt data deleted from this phone.";
       renderReceiptStats();
     });
+
+    bindShopToolsOnce();
+    renderExtrasChips();
 
     window.GroceryPlan = {
       parseQuickInput,

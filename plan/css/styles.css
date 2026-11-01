@@ -837,3 +837,9 @@ html[dir="rtl"] .item-price-input { text-align: left; }
 .shop-item.is-checked .item-name { text-decoration: line-through; color: var(--muted); }
 .shop-item.is-checked .item-price { color: var(--muted); }
 html[lang="vi"] .chip, html[lang="zh-Hans"] .chip { max-width: 100%; white-space: normal; }
+
+.extras-chips { margin-top: 8px; }
+.extra-chip { background: #eef6ff; }
+.shop-item.is-extra .item-name::after { content: ""; }
+.shop-add-more { margin: 14px 0 8px; padding: 12px; border: 1px dashed color-mix(in srgb, var(--ink, #222) 18%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--card, #fff) 92%, #dff5e8); }
+.shop-add-more label { display: block; font-weight: 700; margin-bottom: 6px; }

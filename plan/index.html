@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#2f6b4f">
   <meta http-equiv="Content-Language" content="en">
   <style>.produce-islands{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}.island{position:absolute;overflow:hidden}.island img{width:100%;height:100%;object-fit:cover;display:block}@media(max-width:899px){.island--desk{display:none}}</style>
-  <link rel="stylesheet" href="css/styles.css?v=1793576834">
+  <link rel="stylesheet" href="css/styles.css?v=1793577250">
 </head>
 <body data-i18n-title-key="meta.title" data-i18n-desc-key="meta.description">
 
@@ -192,7 +192,7 @@
 
       <div class="panel" style="margin-top:18px" id="shopping-panel">
         <h2 data-i18n="results.shopping">Shopping list</h2>
-        <p class="hint">data-i18n="results.shopping.hint">Grouped by aisle. Only items you still need.</p>
+        <p class="hint" data-i18n="results.shopping.hint">Grouped by aisle. Only items you still need.</p>
         <div id="shopping-list"></div>
 
         <div class="shop-tools">
@@ -205,10 +205,7 @@
             <input id="shop-add-input" type="text" data-i18n-placeholder="shop.add.placeholder" placeholder="e.g. cereal, paper towels" autocomplete="off" />
             <button type="button" class="btn btn-secondary" id="shop-add-btn" data-i18n="shop.add.btn">Add</button>
           </div>
-          <div class="shop-add-more">
-            <label for="shop-add-more-input" data-i18n="shop.add.more">Want to add anything else?</label>
-            <input id="shop-add-more-input" type="text" data-i18n-placeholder="shop.add.more.placeholder" placeholder="Type an item and press Enter" autocomplete="off" />
-          </div>
+          <div id="shop-extras-chips" class="chip-row extras-chips" aria-live="polite"></div>
           <form id="shop-helper-form" class="shop-helper">
             <label for="shop-helper-input" data-i18n="shop.helper.label">Ask the list helper</label>
             <div class="shop-helper-row">
@@ -281,11 +278,11 @@
     </div>
   </footer>
 
-  <script src="js/i18n.js?v=1793576834"></script>
-  <script src="js/prices.js?v=1793576834"></script>
-  <script src="js/meals.js?v=1793576834"></script>
-  <script src="js/list-tools.js?v=1793576834"></script>
-  <script src="js/app.js?v=1793576834"></script>
+  <script src="js/i18n.js?v=1793577250"></script>
+  <script src="js/prices.js?v=1793577250"></script>
+  <script src="js/meals.js?v=1793577250"></script>
+  <script src="js/list-tools.js?v=1793577250"></script>
+  <script src="js/app.js?v=1793577250"></script>
 <script data-goatcounter="https://ai901.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
