@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Family Grocery Budget Planner · ai901.help</title>
+  <meta name="description" content="Free any-store grocery budget planner for families. Tap family size, budget, pantry, and meal styles. Estimated prices, week of Nov 2, 2026. Shelf price always wins.">
+  <meta name="theme-color" content="#2f6b4f">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="logo" href="./">Plan<span>·ai901</span></a>
+      <nav class="nav-links" aria-label="Page">
+        <a href="#planner">Plan</a>
+        <a href="#seasonal-section">Seasonal</a>
+        <a href="#receipts">Receipts</a>
+        <a href="about.html">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap" id="planner">
+      <div class="pill">Free · Any store · No login · v1</div>
+      <h1>Family grocery budget planner</h1>
+      <p class="lead">Tap your family size, budget, and what you already have. Get a week of meals and a shopping list of only the missing items. Estimated prices, week of Nov 2, 2026. Shelf price always wins.</p>
+    </section>
+
+    <section class="wrap">
+      <form class="panel" id="plan-form" autocomplete="on">
+        <h2>Build a plan (tap only)</h2>
+        <p class="hint">No typing required. Optional sentence box is at the bottom.</p>
+
+        <div class="field">
+          <div class="field-head">
+            <label>Family size</label>
+            <strong id="family-display">4</strong>
+          </div>
+          <div class="chip-row" id="family-chips" role="group" aria-label="Family size"></div>
+          <div id="family-plus-wrap" class="stepper" hidden>
+            <button type="button" class="btn btn-ghost" id="family-minus" aria-label="Fewer people">−</button>
+            <span>9+ people</span>
+            <button type="button" class="btn btn-ghost" id="family-plus" aria-label="More people">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label>Budget</label>
+            <strong id="budget-display">$250</strong>
+          </div>
+          <div class="chip-row" id="budget-chips" role="group" aria-label="Budget"></div>
+          <div class="stepper">
+            <button type="button" class="btn btn-ghost" id="budget-minus" aria-label="Decrease budget">− $50</button>
+            <button type="button" class="btn btn-ghost" id="budget-plus" aria-label="Increase budget">+ $50</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label>Days</label>
+            <strong id="days-display">7</strong>
+          </div>
+          <div class="chip-row" id="days-chips" role="group" aria-label="Days"></div>
+        </div>
+
+        <div class="field">
+          <label>Meal vibes (optional)</label>
+          <div class="chip-row" id="mealtype-chips" role="group" aria-label="Meal types"></div>
+        </div>
+
+        <div class="field">
+          <label>Already have</label>
+          <p class="hint tight">Tap what you already have — we’ll skip those on the list.</p>
+          <div class="chip-row" id="pantry-chips" role="group" aria-label="Items you already have"></div>
+        </div>
+
+        <div class="field">
+          <label>Allergies to avoid</label>
+          <p class="hint tight">Meal ideas only. Always check labels for allergens.</p>
+          <div class="chip-row" id="allergy-chips" role="group" aria-label="Allergies"></div>
+        </div>
+
+        <div class="field">
+          <label for="field-store">Store name (optional)</label>
+          <input id="field-store" name="store" type="text" placeholder="my store" autocomplete="organization">
+        </div>
+
+        <details class="optional-type">
+          <summary>Optional: type a sentence instead</summary>
+          <div class="field" style="margin-top:12px">
+            <label for="quick-input">Quick text</label>
+            <input id="quick-input" name="quick" type="text" placeholder='e.g. my store, family of 4, $200, 7 days'>
+          </div>
+        </details>
+
+        <input type="hidden" id="field-budget" name="budget" value="250">
+        <input type="hidden" id="field-family" name="family" value="4">
+        <input type="hidden" id="field-days" name="days" value="7">
+
+        <div class="btn-row">
+          <button type="submit" class="btn btn-primary">Build my plan</button>
+          <button type="button" class="btn btn-secondary" id="btn-example">Reset · $250 / 4</button>
+        </div>
+        <p class="estimate-note" style="margin-top:12px;margin-bottom:0">Estimated prices, week of Nov 2, 2026. Shelf price always wins.</p>
+      </form>
+    </section>
+
+    <div id="sticky-summary" class="sticky-summary" hidden>
+      <div class="wrap sticky-inner">
+        <div class="sticky-stats">
+          <div><span class="label">Est. total</span> <strong id="sticky-total">$0</strong></div>
+          <div><span class="label">Left</span> <strong id="sticky-left">$0</strong></div>
+        </div>
+        <a class="btn btn-secondary sticky-jump" href="#shopping-panel">Shopping list</a>
+      </div>
+    </div>
+
+    <section class="wrap" id="results" hidden aria-live="polite">
+      <div class="panel results-top" id="plan-top">
+        <h2>Your plan</h2>
+        <div id="plan-summary"></div>
+        <div id="running-total"></div>
+        <div id="extras-box"></div>
+      </div>
+
+      <h2 class="section-title">Meals</h2>
+      <p class="hint allergy-banner">Meal ideas only. Always check labels for allergens.</p>
+      <div class="meal-grid" id="meal-plan"></div>
+
+      <div class="panel" style="margin-top:18px" id="shopping-panel">
+        <h2>Shopping list</h2>
+        <p class="hint">Grouped by aisle. Only items you still need.</p>
+        <div id="shopping-list"></div>
+      </div>
+    </section>
+
+    <section class="wrap" id="seasonal-section">
+      <h2 class="section-title">Seasonal stretch ideas</h2>
+      <div class="panel" id="seasonal"></div>
+    </section>
+
+    <section class="wrap" id="receipts">
+      <h2 class="section-title">Your trips</h2>
+      <div class="panel">
+        <h2>Receipt tracker</h2>
+        <p class="hint">Upload or paste a receipt. Your receipts stay on your phone. Delete anytime.</p>
+        <div id="receipt-stats"></div>
+        <form id="receipt-form" style="margin-top:16px">
+          <div class="field">
+            <label for="receipt-label">Trip label (optional)</label>
+            <input id="receipt-label" type="text" placeholder="Saturday shop">
+          </div>
+          <div class="field">
+            <label for="receipt-file">Upload or paste a receipt</label>
+            <input id="receipt-file" type="file" accept=".csv,text/csv,text/plain">
+          </div>
+          <div class="field">
+            <label for="receipt-paste">Or paste lines</label>
+            <textarea id="receipt-paste" placeholder="Milk,1,3.49&#10;Eggs,1,2.89&#10;Bread 2.49"></textarea>
+          </div>
+          <div class="btn-row">
+            <button type="submit" class="btn btn-primary">Save trip on this phone</button>
+            <button type="button" class="btn btn-danger" id="btn-delete-data">Delete my data</button>
+          </div>
+          <p class="privacy-note" id="receipt-msg" role="status">Your receipts stay on this phone. Delete anytime.</p>
+        </form>
+      </div>
+    </section>
+
+    <section class="wrap" id="about-blurb">
+      <div class="panel">
+        <h2>About &amp; privacy</h2>
+        <p>Run by ai901 in Memphis. No account. We don’t collect your info. Estimated prices, week of Nov 2, 2026. Shelf price always wins. <strong>Not nutrition or medical advice.</strong> Meal ideas only — always check labels for allergens. Contact <a href="mailto:joshua@ai901.help">joshua@ai901.help</a>. <a href="about.html">Full about page</a>.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="swap-sheet" class="swap-sheet" hidden>
+    <div class="swap-sheet-card" role="dialog" aria-modal="true" aria-labelledby="swap-sheet-title">
+      <div class="swap-sheet-head">
+        <h2 id="swap-sheet-title">Kid-friendly swaps</h2>
+        <button type="button" class="btn btn-ghost" id="swap-sheet-close">Close</button>
+      </div>
+      <div id="swap-sheet-body"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="wrap">
+      <strong>ai901.help · Memphis</strong>
+      <p>Estimated prices, week of Nov 2, 2026. Shelf price always wins. No account. We don’t collect your info. Not nutrition or medical advice.</p>
+    </div>
+  </footer>
+
+  <script src="js/prices.js"></script>
+  <script src="js/meals.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
