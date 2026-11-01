@@ -703,3 +703,93 @@ input:focus, textarea:focus {
   background: #8a2f22;
   border-color: #8a2f22;
 }
+
+/* Floating produce islands (Dynamic Island style) */
+.produce-islands {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+body > header,
+body > main,
+body > footer,
+body > .sticky-summary,
+body > .swap-sheet {
+  position: relative;
+  z-index: 1;
+}
+.site-header { z-index: 20; }
+.island {
+  position: absolute;
+  overflow: hidden;
+  background: #fff;
+  box-shadow:
+    0 10px 28px rgba(42, 36, 28, 0.16),
+    0 2px 6px rgba(42, 36, 28, 0.08);
+  border: 2px solid rgba(255, 253, 249, 0.92);
+  animation: island-float 7s ease-in-out infinite;
+  will-change: transform;
+  opacity: 0.92;
+}
+.island--circle {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+}
+.island--pill {
+  width: 118px;
+  height: 42px;
+  border-radius: 999px;
+}
+.island picture,
+.island img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.island--tomatoes { top: 88px; left: max(6px, calc(50% - 520px)); animation-delay: 0s; }
+.island--citrus { top: 96px; right: max(8px, calc(50% - 510px)); width: 64px; height: 64px; animation-delay: -1.2s; }
+.island--greens { top: 42%; left: max(4px, calc(50% - 540px)); animation-delay: -2.4s; }
+.island--peppers { top: 36%; right: max(6px, calc(50% - 530px)); animation-delay: -3.1s; }
+.island--bread { bottom: 72px; left: max(10px, calc(50% - 500px)); width: 68px; height: 68px; animation-delay: -4s; }
+.island--reds { bottom: 120px; right: max(12px, calc(50% - 500px)); width: 56px; height: 56px; animation-delay: -5s; }
+.island--limes { top: 22%; right: max(18px, calc(50% - 480px)); width: 104px; height: 36px; animation-delay: -1.8s; }
+
+@keyframes island-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+@media (max-width: 899px) {
+  .island--desk { display: none; }
+  .island--circle { width: 48px; height: 48px; border-width: 1.5px; }
+  .island--pill { width: 84px; height: 32px; border-width: 1.5px; }
+  .island--tomatoes { top: 58px; left: 6px; }
+  .island--citrus { top: 62px; right: 8px; width: 44px; height: 44px; }
+  .island--bread { bottom: 18px; left: auto; right: 10px; width: 46px; height: 46px; }
+  .island { opacity: 0.88; box-shadow: 0 6px 16px rgba(42, 36, 28, 0.14); }
+}
+
+@media (min-width: 900px) and (max-width: 1100px) {
+  .island--greens,
+  .island--peppers,
+  .island--limes { opacity: 0.75; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .island { animation: none; }
+}
+
+/* Keep cards readable above soft page wash */
+.panel,
+.day-card,
+.recipe-card,
+.wait-hero .pill {
+  background: rgba(255, 253, 249, 0.96);
+}
+.panel {
+  box-shadow: var(--shadow);
+}
