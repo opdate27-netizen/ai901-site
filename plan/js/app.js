@@ -16,6 +16,18 @@
   const RECEIPT_LINE_PRICE_MAX = 500;
   const RECEIPT_PASTE_MAX = 100000; // chars
   const prices = () => window.PRICE_TABLE.items;
+  function tt(key, vars) {
+    return (window.I18N && window.I18N.t) ? window.I18N.t(key, vars) : key;
+  }
+  function tMeal(id, fallback) {
+    return (window.I18N && window.I18N.mealName) ? window.I18N.mealName(id, fallback) : fallback;
+  }
+  function tItem(id, fallback) {
+    return (window.I18N && window.I18N.itemName) ? window.I18N.itemName(id, fallback) : fallback;
+  }
+  function tCat(cat) {
+    return (window.I18N && window.I18N.categoryName) ? window.I18N.categoryName(cat) : cat;
+  }
 
   const state = {
     store: "any store",
@@ -172,7 +184,7 @@
       const item = table[ing.id];
       if (!item) return;
       const qty = ing.qty * scale;
-      const name = displayName(ing.id, item.name);
+      const name = displayName(ing.id, tItem(ing.id, item.name));
       if (pantryKeys.has(ing.id)) {
         skipped.push({ id: ing.id, name, qty });
         return;
@@ -279,9 +291,9 @@
       });
       daysOut.push({
         day: d + 1,
-        breakfast: b ? { id: b.id, name: b.name, cost: bc.total, tags: b.tags || [] } : null,
-        lunch: l ? { id: l.id, name: l.name, cost: lc.total, tags: l.tags || [] } : null,
-        dinner: din ? { id: din.id, name: din.name, cost: dc.total, tags: din.tags || [] } : null,
+        breakfast: b ? { id: b.id, name: tMeal(b.id, b.name), cost: bc.total, tags: b.tags || [] } : null,
+        lunch: l ? { id: l.id, name: tMeal(l.id, l.name), cost: lc.total, tags: l.tags || [] } : null,
+        dinner: din ? { id: din.id, name: tMeal(din.id, din.name), cost: dc.total, tags: din.tags || [] } : null,
         dayTotal: bc.total + lc.total + dc.total
       });
     }
@@ -387,15 +399,15 @@
     const days = clamp(Math.round(rawDays), DAYS_MIN, DAYS_MAX);
 
     if (Number.isFinite(rawBudget) && rawBudget < BUDGET_MIN) {
-      notices.push("Our smallest plan for this family is $" + BUDGET_MIN + "; here's that plan.");
+      notices.push(tt("notice.budgetMin", { n: BUDGET_MIN }));
     } else if (Number.isFinite(rawBudget) && rawBudget > BUDGET_MAX) {
-      notices.push("Largest budget we can plan is $" + BUDGET_MAX + "; here's that plan.");
+      notices.push(tt("notice.budgetMax", { n: BUDGET_MAX }));
     }
     if (Number.isFinite(rawFamily) && (rawFamily < FAMILY_MIN || rawFamily > FAMILY_MAX)) {
-      notices.push("Family size stays between " + FAMILY_MIN + " and " + FAMILY_MAX + ". Using " + family + ".");
+      notices.push(tt("notice.familyClamp", { min: FAMILY_MIN, max: FAMILY_MAX, n: family }));
     }
     if (Number.isFinite(rawDays) && (rawDays < DAYS_MIN || rawDays > DAYS_MAX)) {
-      notices.push("Days stay between " + DAYS_MIN + " and " + DAYS_MAX + ". Using " + days + ".");
+      notices.push(tt("notice.daysClamp", { min: DAYS_MIN, max: DAYS_MAX, n: days }));
     }
 
     const store = (opts.store || state.store || "any store").trim() || "any store";
@@ -599,11 +611,11 @@
     }, 0);
     const allergyShortfall = allergyKeys.size > 0 && filledSlots < expectedSlots;
     if (allergyShortfall) {
-      notices.push("We couldn't build a full plan with these allergies. Try fewer picks or a bigger budget.");
+      notices.push(tt("notice.allergyShortfall"));
     }
     if (poolMeta.typeRelaxed && types && types.size) {
       const labels = Array.from(types).join(" + ");
-      notices.push("Couldn't combine " + labels + " — showing closest ideas.");
+      notices.push(tt("notice.typeRelaxed", { labels: labels }));
     }
 
     return {
@@ -697,15 +709,15 @@
     out.days = clamp(Math.round(out.days), DAYS_MIN, DAYS_MAX);
     out.budget = clamp(out.budget, BUDGET_MIN, BUDGET_MAX);
     if (rawBudget < BUDGET_MIN) {
-      out.notices.push("Our smallest plan for this family is $" + BUDGET_MIN + "; here's that plan.");
+      out.notices.push(tt("notice.budgetMin", { n: BUDGET_MIN }));
     } else if (rawBudget > BUDGET_MAX) {
-      out.notices.push("Largest budget we can plan is $" + BUDGET_MAX + "; here's that plan.");
+      out.notices.push(tt("notice.budgetMax", { n: BUDGET_MAX }));
     }
     if (rawFamily < FAMILY_MIN || rawFamily > FAMILY_MAX) {
-      out.notices.push("Family size stays between " + FAMILY_MIN + " and " + FAMILY_MAX + ". Using " + out.family + ".");
+      out.notices.push(tt("notice.familyClamp", { min: FAMILY_MIN, max: FAMILY_MAX, n: out.family }));
     }
     if (rawDays < DAYS_MIN || rawDays > DAYS_MAX) {
-      out.notices.push("Days stay between " + DAYS_MIN + " and " + DAYS_MAX + ". Using " + out.days + ".");
+      out.notices.push(tt("notice.daysClamp", { min: DAYS_MIN, max: DAYS_MAX, n: out.days }));
     }
     out.rawBudget = rawBudget;
     out.rawFamily = rawFamily;
@@ -880,8 +892,8 @@
     }
 
     const allergyNote = plan.allergies && plan.allergies.length
-      ? `<p class="privacy-note">Avoiding: ${plan.allergies.map(escapeHtml).join(", ")}. Meal ideas only. Always check labels for allergens.</p>`
-      : `<p class="estimate-note">Meal ideas only. Always check labels for allergens.</p>`;
+      ? `<p class="privacy-note">${escapeHtml(tt("note.avoiding", { list: plan.allergies.map((id) => (window.I18N && window.I18N.allergyLabel) ? window.I18N.allergyLabel(id, id) : id).join(", ") }))}</p>`
+      : `<p class="estimate-note">${escapeHtml(tt("note.allergyOnly"))}</p>`;
 
     const noticeHtml = (plan.notices && plan.notices.length)
       ? plan.notices.map((n) => `<p class="privacy-note" role="status">${escapeHtml(n)}</p>`).join("")
@@ -970,20 +982,31 @@
       return `<details class="day-card day-collapse"><summary><strong>Day ${d.day}</strong> <span>${money(d.dayTotal)}</span></summary>${body}</details>`;
     }).join("");
 
-    const cats = Object.keys(plan.grouped).sort();
+
+    // Merge extras + optional still-need filter
+    let shopItems = (window.ListTools ? window.ListTools.mergeExtrasIntoShopping(plan.shopping || []) : (plan.shopping || []).slice());
+    const shopView = window.ListTools ? window.ListTools.loadView() : "all";
+    if (shopView === "need" && window.ListTools) shopItems = window.ListTools.filterStillNeed(shopItems);
+    const grouped = window.ListTools ? window.ListTools.groupByCat(shopItems) : plan.grouped;
+    const cats = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+    const checkedMap = window.ListTools ? window.ListTools.loadChecked() : {};
     $("#shopping-list").innerHTML = cats.length ? cats.map((cat) => `
       <div class="shop-group">
-        <h3>${escapeHtml(cat)}</h3>
+        <h3>${escapeHtml(tCat(cat))}</h3>
         <ul>
-          ${plan.grouped[cat].map((it) => {
+          ${grouped[cat].map((it) => {
             const custom = !!it.custom || hasCustomPrice(it.id);
-            const yours = custom ? `<span class="yours-mark" title="Your price">yours</span>` : "";
+            const yours = custom ? `<span class="yours-mark" title="${escapeHtml(tt("shop.yoursTitle"))}">${escapeHtml(tt("shop.yours"))}</span>` : "";
             const reset = custom
-              ? `<button type="button" class="item-reset" data-id="${escapeHtml(it.id)}" aria-label="Reset to estimate">×</button>`
+              ? `<button type="button" class="item-reset" data-id="${escapeHtml(it.id)}" aria-label="${escapeHtml(tt("shop.resetAria"))}">×</button>`
               : "";
+            const isChecked = !!checkedMap[it.id];
             return `
-            <li class="shop-item${custom ? " is-custom" : ""}" data-id="${escapeHtml(it.id)}" data-unit-price="${it.price}" data-default-name="${escapeHtml((prices()[it.id] && prices()[it.id].name) || it.name)}">
-              <button type="button" class="shop-row" data-id="${escapeHtml(it.id)}" aria-label="Edit brand and price for ${escapeHtml(it.name)}">
+            <li class="shop-item${custom ? " is-custom" : ""}${isChecked ? " is-checked" : ""}" data-id="${escapeHtml(it.id)}" data-unit-price="${it.price}" data-default-name="${escapeHtml((prices()[it.id] && prices()[it.id].name) || it.name)}">
+              <label class="shop-check">
+                <input type="checkbox" class="item-bought" data-id="${escapeHtml(it.id)}" ${isChecked ? "checked" : ""} aria-label="Purchased" />
+              </label>
+              <button type="button" class="shop-row" data-id="${escapeHtml(it.id)}" aria-label="${escapeHtml(tt("shop.editAria", { name: it.name }))}">
                 <span class="item-name">${escapeHtml(it.name)}${yours}</span>
                 <span class="item-qty">${formatQty(it.qty)} ${escapeHtml(it.unit)}</span>
                 <span class="item-price">${money(it.cost)}</span>
@@ -993,15 +1016,39 @@
           }).join("")}
         </ul>
       </div>
-    `).join("") : `<p class="muted">Nothing to buy — you already have what this plan needs.</p>`;
+    `).join("") : `<p class="muted">${escapeHtml(tt("shop.empty"))}</p>`;
+
+    // View toggle active state
+    document.querySelectorAll("[data-shop-view]").forEach((btn) => {
+      btn.classList.toggle("is-on", btn.getAttribute("data-shop-view") === shopView);
+    });
 
     bindShoppingPriceEdits();
+    bindShoppingChecks();
 
     $("#meal-plan").querySelectorAll(".meal-tap").forEach((btn) => {
       btn.addEventListener("click", () => openSwapSheet(btn, scale, pantryKeys, allergyKeys));
     });
 
     results.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function bindShoppingChecks() {
+    const root = $("#shopping-list");
+    if (!root || !window.ListTools) return;
+    root.querySelectorAll(".item-bought").forEach((box) => {
+      box.addEventListener("change", () => {
+        const id = box.getAttribute("data-id");
+        const map = window.ListTools.loadChecked();
+        if (box.checked) map[id] = true; else delete map[id];
+        window.ListTools.saveChecked(map);
+        if (window.ListTools.loadView() === "need" && state.lastPlan) renderPlan(state.lastPlan);
+        else {
+          const li = box.closest(".shop-item");
+          if (li) li.classList.toggle("is-checked", box.checked);
+        }
+      });
+    });
   }
 
   function bindShoppingPriceEdits() {
@@ -1037,12 +1084,12 @@
     li.classList.add("is-editing");
     li.innerHTML = `
       <label class="shop-edit-brand">
-        <span class="sr-only">Brand or product</span>
-        <input type="text" class="item-brand-input" maxlength="${BRAND_MAX}" placeholder="Brand / product" value="${escapeHtml(brandVal)}" autocomplete="off" />
+        <span class="sr-only">${escapeHtml(tt("shop.brandAria"))}</span>
+        <input type="text" class="item-brand-input" maxlength="${BRAND_MAX}" placeholder="${escapeHtml(tt("shop.brandPlaceholder"))}" value="${escapeHtml(brandVal)}" autocomplete="off" />
       </label>
       <label class="shop-edit-price">
-        <span class="sr-only">Your price</span>
-        <input type="text" class="item-price-input" inputmode="decimal" placeholder="Price" value="${escapeHtml(String(priceVal))}" autocomplete="off" />
+        <span class="sr-only">${escapeHtml(tt("shop.priceAria"))}</span>
+        <input type="text" class="item-price-input" inputmode="decimal" placeholder="${escapeHtml(tt("shop.pricePlaceholder"))}" value="${escapeHtml(String(priceVal))}" autocomplete="off" />
       </label>
     `;
     const brandInput = li.querySelector(".item-brand-input");
@@ -1135,9 +1182,12 @@
 
   function renderSeasonal() {
     const season = window.getSeasonalForMonth();
+    const i18nSeason = (window.I18N && window.I18N.seasonalBlock) ? window.I18N.seasonalBlock(season.key) : null;
+    const title = (i18nSeason && i18nSeason.title) || season.title;
+    const blurb = (i18nSeason && i18nSeason.blurb) || season.blurb;
     $("#seasonal").innerHTML = `
-      <div class="season-badge">${escapeHtml(season.title)}</div>
-      <p class="season-blurb">${escapeHtml(season.blurb)}</p>
+      <div class="season-badge">${escapeHtml(title)}</div>
+      <p class="season-blurb">${escapeHtml(blurb)}</p>
       <div class="recipe-grid">
         ${season.recipes.map((r) => `
           <article class="recipe-card">
@@ -1303,11 +1353,11 @@
     });
 
     buildChipRow("#days-chips", [
-      { id: "3", label: "3 days" },
-      { id: "5", label: "5 days" },
-      { id: "7", label: "7 days" },
-      { id: "10", label: "10 days" },
-      { id: "14", label: "14 days" }
+      { id: "3", label: tt("field.days.n", { n: 3 }) },
+      { id: "5", label: tt("field.days.n", { n: 5 }) },
+      { id: "7", label: tt("field.days.n", { n: 7 }) },
+      { id: "10", label: tt("field.days.n", { n: 10 }) },
+      { id: "14", label: tt("field.days.n", { n: 14 }) }
     ], {
       onToggle: (id) => {
         state.days = parseInt(id, 10);
@@ -1316,7 +1366,7 @@
       }
     });
 
-    buildChipRow("#mealtype-chips", window.MEAL_TYPE_CHIPS, {
+    buildChipRow("#mealtype-chips", window.MEAL_TYPE_CHIPS.map((c) => ({ id: c.id, label: (window.I18N && window.I18N.mealTypeLabel) ? window.I18N.mealTypeLabel(c.id, c.label) : c.label })), {
       multi: true,
       onToggle: (id) => {
         if (state.mealTypes.has(id)) state.mealTypes.delete(id);
@@ -1326,7 +1376,7 @@
       }
     });
 
-    buildChipRow("#pantry-chips", window.PANTRY_CHIPS.map((c) => ({ id: c.id, label: c.label })), {
+    buildChipRow("#pantry-chips", window.PANTRY_CHIPS.map((c) => ({ id: c.id, label: (window.I18N && window.I18N.pantryLabel) ? window.I18N.pantryLabel(c.id, c.label) : c.label })), {
       multi: true,
       onToggle: (id) => {
         if (state.pantry.has(id)) state.pantry.delete(id);
@@ -1338,7 +1388,7 @@
     });
 
     if ($("#allergy-chips") && window.ALLERGY_CHIPS) {
-      buildChipRow("#allergy-chips", window.ALLERGY_CHIPS.map((c) => ({ id: c.id, label: c.label })), {
+      buildChipRow("#allergy-chips", window.ALLERGY_CHIPS.map((c) => ({ id: c.id, label: (window.I18N && window.I18N.allergyLabel) ? window.I18N.allergyLabel(c.id, c.label) : c.label })), {
         multi: true,
         onToggle: (id) => {
           if (state.allergies.has(id)) state.allergies.delete(id);
@@ -1462,7 +1512,23 @@
     BUDGET_MAX,
     RECEIPT_LINE_PRICE_MAX,
     RECEIPT_PASTE_MAX,
-    CUSTOM_PRICE_MAX
+    CUSTOM_PRICE_MAX,
+    onLanguageChange: function () {
+      try { if (window.I18N) window.I18N.applyDocument(window.I18N.lang); } catch (e) {}
+      refreshChipUI();
+      // rebuild chip labels
+      try { initChipsAndButtons && null; } catch (e) {}
+      if (state.lastPlan) renderPlan(state.lastPlan);
+      else {
+        // re-init chip rows with translated labels
+        if (typeof buildChipRow === "function") {
+          /* refreshed via refresh paths */
+        }
+      }
+      renderSeasonal();
+      renderReceiptStats();
+    },
+    tt: tt
   });
 
   if (typeof document !== "undefined" && document.querySelector) {

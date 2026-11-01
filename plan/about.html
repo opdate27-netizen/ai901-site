@@ -6,10 +6,11 @@
   <title>About &amp; privacy · Plan · ai901.help</title>
   <meta name="description" content="About the ai901 family grocery budget planner: privacy, estimates, and contact.">
   <meta name="theme-color" content="#2f6b4f">
+  <meta http-equiv="Content-Language" content="en">
   <style>.produce-islands{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}.island{position:absolute;overflow:hidden}.island img{width:100%;height:100%;object-fit:cover;display:block}@media(max-width:899px){.island--desk{display:none}}</style>
-  <link rel="stylesheet" href="css/styles.css?v=1793575540">
+  <link rel="stylesheet" href="css/styles.css?v=1793576834">
 </head>
-<body>
+<body data-i18n-title-key="about.meta.title" data-i18n-desc-key="about.meta.description">
 <div class="produce-islands" aria-hidden="true">
   <div class="island island--circle island--tomatoes">
     <picture>
@@ -58,29 +59,40 @@
   <header class="site-header">
     <div class="wrap">
       <a class="logo" href="./">Plan<span>·ai901</span></a>
-      <nav class="nav-links" aria-label="Page">
-        <a href="./">Planner</a>
-        <a href="./">Planner</a>
-        <a href="about.html">About</a>
-      </nav>
+      <div class="header-tools">
+        <label class="lang-picker">
+          <span class="sr-only" data-i18n="lang.label">Language</span>
+          <select id="lang-select" data-i18n-aria="lang.label">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="ar">العربية</option>
+            <option value="vi">Tiếng Việt</option>
+            <option value="zh-Hans">中文</option>
+          </select>
+        </label>
+        <nav class="nav-links" data-i18n-aria="nav.aria">
+          <a href="./" data-i18n="nav.planner">Planner</a>
+          <a href="about.html" data-i18n="nav.about">About</a>
+        </nav>
+      </div>
     </div>
   </header>
 
   <main class="wrap" style="padding:28px 0 40px">
     <section class="panel">
-      <h1 style="margin-top:0;font-size:1.6rem">About &amp; privacy</h1>
-      <p>This planner is run by <strong>ai901</strong> in <strong>Memphis</strong>. It is a free, any-store grocery budget helper for families.</p>
-      <h2>Privacy</h2>
-      <p>No account. We do not collect your plans, pantry picks, or receipts. Receipt tools run only on your phone or computer. Your receipts stay on your phone. Delete anytime. Waitlist signup uses your own email app — <strong>we only see what you choose to send.</strong></p>
-      <h2>Prices</h2>
-      <p>Average U.S. prices, week of Nov 2, 2026. Shelf price always wins. Totals are planning estimates, not a promise of what you will pay.</p>
-      <h2>Allergies &amp; health</h2>
-      <p>Meal ideas only. Always check labels for allergens. This tool is <strong>not</strong> nutrition advice and <strong>not</strong> medical advice.</p>
-      <h2>Contact</h2>
+      <h1 style="margin-top:0;font-size:1.6rem" data-i18n="about.title">About &amp; privacy</h1>
+      <p data-i18n-html="about.intro">This planner is run by <strong>ai901</strong> in <strong>Memphis</strong>. It is a free, any-store grocery budget helper for families.</p>
+      <h2 data-i18n="about.privacy.h">Privacy</h2>
+      <p data-i18n-html="about.privacy.p">No account. We do not collect your plans, pantry picks, or receipts. Receipt tools run only on your phone or computer. Your receipts stay on your phone. Delete anytime. Waitlist signup uses your own email app — <strong>we only see what you choose to send.</strong></p>
+      <h2 data-i18n="about.prices.h">Prices</h2>
+      <p data-i18n="about.prices.p">Average U.S. prices, week of Nov 2, 2026. Shelf price always wins. Totals are planning estimates, not a promise of what you will pay.</p>
+      <h2 data-i18n="about.allergies.h">Allergies &amp; health</h2>
+      <p data-i18n-html="about.allergies.p">Meal ideas only. Always check labels for allergens. This tool is <strong>not</strong> nutrition advice and <strong>not</strong> medical advice.</p>
+      <h2 data-i18n="about.contact.h">Contact</h2>
       <p><a href="mailto:joshua@ai901.help">joshua@ai901.help</a></p>
       <div class="btn-row">
-        <a class="btn btn-primary" href="./">Open the planner</a>
-        <a class="btn btn-ghost" href="./">Back</a>
+        <a class="btn btn-primary" href="./" data-i18n="about.openPlanner">Open the planner</a>
+        <a class="btn btn-ghost" href="./" data-i18n="about.back">Back</a>
       </div>
     </section>
   </main>
@@ -90,6 +102,7 @@
       <strong>ai901.help · Memphis</strong>
     </div>
   </footer>
+<script src="js/i18n.js?v=1793576834"></script>
 <script data-goatcounter="https://ai901.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
