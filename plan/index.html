@@ -7,8 +7,8 @@
   <meta name="description" content="Free any-store grocery budget planner for families. Tap family size, budget, pantry, and meal styles. Estimated prices, week of Nov 2, 2026. Shelf price always wins.">
   <meta name="theme-color" content="#2f6b4f">
   <meta http-equiv="Content-Language" content="en">
-  <style>.produce-islands{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}.island{position:absolute;overflow:hidden}.island img{width:100%;height:100%;object-fit:cover;display:block}@media(max-width:899px){.island--desk{display:none}}</style>
-  <link rel="stylesheet" href="css/styles.css?v=1793577250">
+  <style>.produce-islands{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:-1}.island{position:absolute;overflow:hidden}.island img{width:100%;height:100%;object-fit:cover;display:block}@media(max-width:899px){.island--desk{display:none}}</style>
+  <link rel="stylesheet" href="css/styles.css?v=1793578170">
 </head>
 <body data-i18n-title-key="meta.title" data-i18n-desc-key="meta.description">
 
@@ -90,8 +90,16 @@
 
     <section class="wrap">
       <form class="panel" id="plan-form" autocomplete="on">
-        <h2 data-i18n="form.title">Build a plan (tap only)</h2>
-        <p class="hint" data-i18n="form.hint">No typing required. Optional sentence box is at the bottom.</p>
+        <div class="need-box" id="need-box">
+          <h2 class="need-title" data-i18n="need.title">Tell us what your family needs</h2>
+          <p class="need-lead" data-i18n="need.lead">Type a sentence or paste a short list. We will set budget, family size, and add items to your shopping list.</p>
+          <label class="sr-only" for="quick-input" data-i18n="need.label">What your family needs</label>
+          <textarea id="quick-input" name="quick" class="need-input" rows="4" data-i18n-placeholder="need.placeholder" placeholder="e.g. Family of 5, $150 a week. Need milk, eggs, cereal. No pork. We want chili and quick lunches."></textarea>
+          <div class="need-examples" id="need-examples" role="list" aria-label="Examples"></div>
+        </div>
+
+        <h2 class="form-taps-title" data-i18n="form.title">Or fine-tune with taps</h2>
+        <p class="hint" data-i18n="form.hint">Adjust family size, budget, pantry, and allergies below — or just use the box above.</p>
 
         <div class="field">
           <div class="field-head">
@@ -133,7 +141,7 @@
 
         <div class="field">
           <label data-i18n="field.pantry">Already have</label>
-          <p class="hint tight">data-i18n="field.pantry.hint">Tap what you already have — we’ll skip those on the list.</p>
+          <p class="hint tight" data-i18n="field.pantry.hint">Tap what you already have — we’ll skip those on the list.</p>
           <div class="chip-row" id="pantry-chips" role="group" data-i18n-aria="field.pantry.aria" aria-label="Items you already have"></div>
         </div>
 
@@ -147,14 +155,6 @@
           <label for="field-store" data-i18n="field.store">Store name (optional)</label>
           <input id="field-store" name="store" type="text" data-i18n-placeholder="field.store.placeholder" placeholder="my store" autocomplete="organization">
         </div>
-
-        <details class="optional-type">
-          <summary data-i18n="field.quick.summary">Optional: type a sentence instead</summary>
-          <div class="field" style="margin-top:12px">
-            <label for="quick-input" data-i18n="field.quick">Quick text</label>
-            <input id="quick-input" name="quick" type="text" data-i18n-placeholder="field.quick.placeholder" placeholder="e.g. my store, family of 4, $200, 7 days">
-          </div>
-        </details>
 
         <input type="hidden" id="field-budget" name="budget" value="250">
         <input type="hidden" id="field-family" name="family" value="4">
@@ -278,11 +278,11 @@
     </div>
   </footer>
 
-  <script src="js/i18n.js?v=1793577250"></script>
-  <script src="js/prices.js?v=1793577250"></script>
-  <script src="js/meals.js?v=1793577250"></script>
-  <script src="js/list-tools.js?v=1793577250"></script>
-  <script src="js/app.js?v=1793577250"></script>
+  <script src="js/i18n.js?v=1793578170"></script>
+  <script src="js/prices.js?v=1793578170"></script>
+  <script src="js/meals.js?v=1793578170"></script>
+  <script src="js/list-tools.js?v=1793578170"></script>
+  <script src="js/app.js?v=1793578170"></script>
 <script data-goatcounter="https://ai901.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>

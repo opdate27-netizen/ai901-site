@@ -40,6 +40,7 @@
     swaps: {}, // "day-slot" -> mealId
     lastPlan: null,
     extrasAdded: false,
+    planNonce: 0,
     notices: []
   };
 
@@ -431,7 +432,7 @@
 
     const preferKid = types.has("kid");
     let scale = (family / 4) * portion;
-    let seed = family * 7 + days;
+    let seed = family * 7 + days + (state.planNonce || 0) * 17;
     const poolMeta = { typeRelaxed: false };
 
     function sequences(tMax) {
@@ -676,19 +677,24 @@
       budget: fields.budget != null && fields.budget !== "" ? Number(fields.budget) : null,
       family: fields.family != null && fields.family !== "" ? Number(fields.family) : null,
       days: fields.days != null && fields.days !== "" ? Number(fields.days) : null,
-      notices: []
+      notices: [],
+      mealTypes: [],
+      allergies: [],
+      pantry: [],
+      extraItems: [],
+      prefs: {}
     };
     const t = (text || "").trim();
     if (t) {
       // Allow $0 / negative so clamps can tell the truth
-      const budgetMatch = t.match(/\$\s*(-?[\d,]+(?:\.\d+)?)/) || t.match(/\b(-?[\d,]+(?:\.\d+)?)\s*(?:dollars|bucks)\b/i);
+      const budgetMatch = t.match(/\$\s*(-?[\d,]+(?:\.\d+)?)/) || t.match(/\b(-?[\d,]+(?:\.\d+)?)\s*(?:dollars|bucks)\b/i) || t.match(/\b(-?\d+)\s*(?:a|per)\s*week\b/i);
       if (budgetMatch) out.budget = parseFloat(budgetMatch[1].replace(/,/g, ""));
       const famMatch = t.match(/family\s*(?:of\s*)?(-?\d+)/i) || t.match(/(-?\d+)\s*(?:people|persons|kids|of us)/i);
       if (famMatch) out.family = parseInt(famMatch[1], 10);
-      const daysMatch = t.match(/(-?\d+)\s*days?/i) || t.match(/for\s+a\s+(week|weekend)/i);
+      const daysMatch = t.match(/(-?\d+)\s*days?/i) || t.match(/for\s+a\s+(week|weekend)/i) || t.match(/\b(a|per)\s+week\b/i);
       if (daysMatch) {
         if (daysMatch[1] && /^-?\d+$/.test(daysMatch[1])) out.days = parseInt(daysMatch[1], 10);
-        else if (/week/i.test(daysMatch[1] || "")) out.days = 7;
+        else if (/week/i.test(daysMatch[0] || "")) out.days = 7;
         else if (/weekend/i.test(daysMatch[1] || "")) out.days = 2;
       }
       const storeMatch = t.match(/(?:going to|at|from|shopping at)\s+([A-Za-z][A-Za-z0-9 &'._-]{1,40})/i);
@@ -697,6 +703,40 @@
         s = s.replace(/\s+(i|we|have|with|for|family|budget)\b.*$/i, "").trim();
         if (s && !/^(i|we|my|our|have|need)$/i.test(s)) out.store = s;
       }
+      // Meal vibes
+      if (/\bquick\b/i.test(t)) out.mealTypes.push("quick");
+      if (/\bcheap\b|best price|on a budget|ahorrar|barato/i.test(t)) out.mealTypes.push("cheap");
+      if (/\bsoup\b|chili|stew/i.test(t)) out.mealTypes.push("soup");
+      if (/\bkid\b|kids|niños|child/i.test(t)) out.mealTypes.push("kid");
+      if (/no[- ]?oven|sin horno/i.test(t)) out.mealTypes.push("no-oven");
+      // Avoid / allergy words
+      if (/\bno pork\b|avoid pork|sin cerdo|بدون لحم خنزير/i.test(t)) { /* preference flag */ out.prefs.noPork = true; }
+      if (/\bnut[- ]?free|no nuts|sin frutos|بدون مكسرات/i.test(t)) out.allergies.push("nuts");
+      if (/\bdairy[- ]?free|no dairy|sin lácteos|بدون ألبان/i.test(t)) out.allergies.push("dairy");
+      if (/\bgluten[- ]?free|no gluten|sin gluten/i.test(t)) out.allergies.push("gluten");
+      if (/\begg[- ]?free|no eggs|sin huevos/i.test(t)) out.allergies.push("eggs");
+      if (/\bsoy[- ]?free|no soy|sin soya/i.test(t)) out.allergies.push("soy");
+      if (/\bshellfish|no shrimp|sin mariscos/i.test(t)) out.allergies.push("shellfish");
+      if (/\ball organic|orgánico|organic brands/i.test(t)) out.prefs.organic = true;
+      // Shopping-list style: "need milk, eggs, and cereal" or comma lists of known items
+      const listMatch = t.match(/(?:need|needs|want|buy|get|lista|shopping list)[:\s]+(.+)/i);
+      const chunk = listMatch ? listMatch[1] : t;
+      const parts = chunk.split(/\s*(?:,|;|\band\b|\by\b|\bvà\b| و |和)\s*/i).map((x) => x.trim()).filter(Boolean);
+      const skipWord = /^(family|of|people|days?|week|budget|dollars?|bucks|store|my|our|we|i|a|the|with|for|no|pork|organic|brands|best|price|quick|lunches|tacos|chili|want|need)$/i;
+      parts.forEach((p) => {
+        const cleaned = p.replace(/[$.\d]+/g, " ").replace(/\s+/g, " ").trim();
+        if (!cleaned || cleaned.length > 40 || skipWord.test(cleaned)) return;
+        if (/family|dollar|budget|people|days/i.test(cleaned)) return;
+        // Prefer known catalog items via ListTools when available
+        if (window.ListTools && window.ListTools.knownItemIdByName(cleaned)) {
+          out.extraItems.push(cleaned);
+        } else if (listMatch && /^[a-zA-Z\u0600-\u06ff\u4e00-\u9fff][\w\s'-]{1,30}$/.test(cleaned)) {
+          out.extraItems.push(cleaned);
+        }
+      });
+      out.mealTypes = [...new Set(out.mealTypes)];
+      out.allergies = [...new Set(out.allergies)];
+      out.extraItems = [...new Set(out.extraItems)];
     }
     if (out.budget == null || !Number.isFinite(out.budget)) out.budget = state.budget;
     if (out.family == null || !Number.isFinite(out.family)) out.family = state.family;
@@ -884,11 +924,11 @@
 
     let leftoverNote = "";
     if (plan.wellUnder) {
-      leftoverNote = `${money(plan.remaining)} left. Add extras or save it.`;
+      leftoverNote = tt("note.leftoverLots", { money: money(plan.remaining) });
     } else if (plan.remaining > 0) {
-      leftoverNote = `About ${Math.round(plan.cushionPct * 100)}% under budget — a little cushion for shelf-price differences.`;
+      leftoverNote = tt("note.cushion", { pct: Math.round(plan.cushionPct * 100) });
     } else {
-      leftoverNote = "Right at your budget using estimate prices.";
+      leftoverNote = tt("note.atBudget");
     }
 
     const allergyNote = plan.allergies && plan.allergies.length
@@ -899,42 +939,45 @@
       ? plan.notices.map((n) => `<p class="privacy-note" role="status">${escapeHtml(n)}</p>`).join("")
       : "";
 
+    const skipKey = plan.skippedPantry === 1 ? "note.skippedPantry" : "note.skippedPantry_plural";
+
     $("#plan-summary").innerHTML = `
       <div class="summary-grid summary-grid-lg">
-        <div class="stat highlight"><span class="label">Est. total</span><strong>${money(plan.total)}</strong></div>
-        <div class="stat ${plan.underBudget ? "ok" : "warn"}"><span class="label">Left in budget</span><strong>${money(plan.remaining)}</strong></div>
-        <div class="stat"><span class="label">Store</span><strong>${escapeHtml(plan.store)}</strong></div>
-        <div class="stat"><span class="label">Family</span><strong>${plan.family}</strong></div>
-        <div class="stat"><span class="label">Days</span><strong>${plan.days}</strong></div>
-        <div class="stat"><span class="label">Budget</span><strong>${money(plan.budget)}</strong></div>
+        <div class="stat highlight"><span class="label">${escapeHtml(tt("stat.estTotal"))}</span><strong>${money(plan.total)}</strong></div>
+        <div class="stat ${plan.underBudget ? "ok" : "warn"}"><span class="label">${escapeHtml(tt("stat.leftBudget"))}</span><strong>${money(plan.remaining)}</strong></div>
+        <div class="stat"><span class="label">${escapeHtml(tt("stat.store"))}</span><strong>${escapeHtml(plan.store)}</strong></div>
+        <div class="stat"><span class="label">${escapeHtml(tt("stat.family"))}</span><strong>${plan.family}</strong></div>
+        <div class="stat"><span class="label">${escapeHtml(tt("stat.days"))}</span><strong>${plan.days}</strong></div>
+        <div class="stat"><span class="label">${escapeHtml(tt("stat.budget"))}</span><strong>${money(plan.budget)}</strong></div>
       </div>
-      <p class="estimate-note">Estimated prices, week of Nov 2, 2026. Shelf price always wins.</p>
-      <p class="estimate-note">${escapeHtml(leftoverNote)}${plan.downgraded ? " Meals were adjusted to fit." : ""}</p>
-      ${plan.skippedPantry ? `<p class="privacy-note">Skipped ${plan.skippedPantry} item${plan.skippedPantry === 1 ? "" : "s"} you already have.</p>` : ""}
+      <p class="estimate-note">${escapeHtml(tt("note.estimates"))}</p>
+      <p class="estimate-note">${escapeHtml(leftoverNote)}${plan.downgraded ? escapeHtml(tt("note.downgraded")) : ""}</p>
+      ${plan.skippedPantry ? `<p class="privacy-note">${escapeHtml(tt(skipKey, { n: plan.skippedPantry }))}</p>` : ""}
       ${noticeHtml}
       ${allergyNote}
+      <p class="plan-built-note" data-plan-nonce="${state.planNonce || 0}">${escapeHtml(tt("plan.updated", { n: state.planNonce || 0 }))}</p>
       <div class="btn-row">
-        <a class="btn btn-secondary" href="#shopping-panel">Shopping list</a>
+        <a class="btn btn-secondary" href="#shopping-panel">${escapeHtml(tt("sticky.shopping"))}</a>
       </div>
     `;
 
     $("#running-total").innerHTML = `
-      <div class="budget-bar" role="img" aria-label="Spent ${money(plan.total)} of ${money(plan.budget)}">
+      <div class="budget-bar" role="img" aria-label="${escapeHtml(tt("budget.spentOf", { spent: money(plan.total), budget: money(plan.budget) }))}">
         <div class="budget-fill" style="width:${clamp((plan.total / plan.budget) * 100, 0, 100)}%"></div>
       </div>
-      <p class="budget-caption"><strong>${money(plan.total)}</strong> estimated of <strong>${money(plan.budget)}</strong></p>
+      <p class="budget-caption">${tt("budget.spentOf", { spent: `<strong>${money(plan.total)}</strong>`, budget: `<strong>${money(plan.budget)}</strong>` })}</p>
     `;
 
     const extras = $("#extras-box");
     if (extras) {
       if (plan.wellUnder && !plan.extrasAdded) {
         extras.innerHTML = `
-          <p class="leftover-callout"><strong>${money(plan.remaining)} left.</strong> Add extras or save it.</p>
-          <button type="button" class="btn btn-primary" id="btn-add-extras">Add extras</button>
+          <p class="leftover-callout"><strong>${escapeHtml(tt("note.extrasCallout", { money: money(plan.remaining) }))}</strong></p>
+          <button type="button" class="btn btn-primary" id="btn-add-extras">${escapeHtml(tt("btn.addExtras"))}</button>
         `;
         $("#btn-add-extras").addEventListener("click", () => addExtrasFill());
       } else if (plan.extrasAdded) {
-        extras.innerHTML = `<p class="estimate-note">Extras added — aiming about 3–5% under budget.</p>`;
+        extras.innerHTML = `<p class="estimate-note">${escapeHtml(tt("note.extrasAdded"))}</p>`;
       } else {
         extras.innerHTML = "";
       }
@@ -949,10 +992,11 @@
         <ul>
           ${["breakfast", "lunch", "dinner"].map((slot) => {
             const m = d[slot];
+            const slotLabel = escapeHtml(tt("slot." + slot));
             if (!m) {
               return `<li class="meal-static meal-missing">
-                <span class="meal-tag">${slot}</span>
-                <span class="meal-name">No safe idea for this slot yet</span>
+                <span class="meal-tag">${slotLabel}</span>
+                <span class="meal-name">${escapeHtml(tt("meal.missing"))}</span>
               </li>`;
             }
             const opts = kidSwapOptions(slot, m.id, m.cost, scale, pantryKeys)
@@ -961,25 +1005,25 @@
             if (canSwap) {
               return `<li>
                 <button type="button" class="meal-tap" data-day="${d.day}" data-slot="${slot}" data-id="${escapeHtml(m.id)}" data-cost="${m.cost}">
-                  <span class="meal-tag">${slot}</span>
+                  <span class="meal-tag">${slotLabel}</span>
                   <span class="meal-name">${escapeHtml(m.name)}</span>
                   <em>${money(m.cost)}</em>
                 </button>
               </li>`;
             }
             return `<li class="meal-static">
-              <span class="meal-tag">${slot}</span>
+              <span class="meal-tag">${slotLabel}</span>
               <span class="meal-name">${escapeHtml(m.name)}</span>
               <em>${money(m.cost)}</em>
             </li>`;
           }).join("")}
         </ul>
-        <div class="day-total">Day est. ${money(d.dayTotal)}</div>
-        <p class="tap-hint">Tap a meal when a kid-friendly swap at the same or lower cost is available.</p>`;
+        <div class="day-total">${escapeHtml(tt("meal.dayEst", { money: money(d.dayTotal) }))}</div>
+        <p class="tap-hint">${escapeHtml(tt("meal.tapHint"))}</p>`;
       if (d.day === 1) {
-        return `<article class="day-card day-open"><h3>Day ${d.day}</h3>${body}</article>`;
+        return `<article class="day-card day-open"><h3>${escapeHtml(tt("meal.day", { n: d.day }))}</h3>${body}</article>`;
       }
-      return `<details class="day-card day-collapse"><summary><strong>Day ${d.day}</strong> <span>${money(d.dayTotal)}</span></summary>${body}</details>`;
+      return `<details class="day-card day-collapse"><summary><strong>${escapeHtml(tt("meal.day", { n: d.day }))}</strong> <span>${money(d.dayTotal)}</span></summary>${body}</details>`;
     }).join("");
 
 
@@ -1014,16 +1058,16 @@
               : "";
             const isChecked = !!checkedMap[it.id];
             const rem = it.customExtra
-              ? `<button type="button" class="item-reset extra-remove" data-extra-id="${escapeHtml(it.id)}" aria-label="Remove">×</button>`
+              ? `<button type="button" class="item-reset extra-remove" data-extra-id="${escapeHtml(it.id)}" aria-label="${escapeHtml(tt("shop.removeExtraAria"))}">×</button>`
               : "";
             return `
             <li class="shop-item${custom ? " is-custom" : ""}${isChecked ? " is-checked" : ""}${it.customExtra ? " is-extra" : ""}" data-id="${escapeHtml(it.id)}" data-unit-price="${it.price}" data-default-name="${escapeHtml((prices()[it.id] && prices()[it.id].name) || it.name)}">
               <label class="shop-check">
-                <input type="checkbox" class="item-bought" data-id="${escapeHtml(it.id)}" ${isChecked ? "checked" : ""} aria-label="Purchased" />
+                <input type="checkbox" class="item-bought" data-id="${escapeHtml(it.id)}" ${isChecked ? "checked" : ""} aria-label="${escapeHtml(tt("shop.purchasedAria"))}" />
               </label>
               <button type="button" class="shop-row" data-id="${escapeHtml(it.id)}" aria-label="${escapeHtml(tt("shop.editAria", { name: it.name }))}">
                 <span class="item-name">${escapeHtml(it.name)}${yours}</span>
-                <span class="item-qty">${formatQty(it.qty)} ${escapeHtml(it.unit)}</span>
+                <span class="item-qty">${formatQty(it.qty)} ${escapeHtml((window.I18N && window.I18N.unitName) ? window.I18N.unitName(it.unit) : it.unit)}</span>
                 <span class="item-price">${money(it.cost)}</span>
               </button>
               ${reset}${rem}
@@ -1185,9 +1229,9 @@
     }
     const sheet = $("#swap-sheet");
     const body = $("#swap-sheet-body");
-    $("#swap-sheet-title").textContent = `Kid-friendly swaps · Day ${day} ${slot}`;
+    $("#swap-sheet-title").textContent = tt("swap.titleDay", { day: day, slot: tt("slot." + slot) });
     if (!options.length) {
-      body.innerHTML = `<p class="muted">No cheaper kid swap for this one.</p>`;
+      body.innerHTML = `<p class="muted">${escapeHtml(tt("swap.none"))}</p>`;
     } else {
       body.innerHTML = options.map((o) => `
         <button type="button" class="swap-option" data-day="${day}" data-slot="${slot}" data-id="${o.meal.id}">
@@ -1223,7 +1267,7 @@
           return `
           <article class="recipe-card">
             <h3>${escapeHtml(name)}</h3>
-            <p class="recipe-meta">Serves ~${r.serves} · ~${meals} meals · Est. ${money(r.cost)}</p>
+            <p class="recipe-meta">${escapeHtml(tt("recipe.meta", { serves: r.serves, meals: meals, money: money(r.cost) }))}</p>
             <p>${escapeHtml(note)}</p>
           </article>`;
         }).join("")}
@@ -1237,7 +1281,7 @@
     const box = $("#receipt-stats");
     const summary = summarizeReceipts(trips);
     if (!summary) {
-      box.innerHTML = `<p class="muted">No trips saved yet. Upload or paste a receipt below. Your receipts stay on your phone. Delete anytime.</p>`;
+      box.innerHTML = `<p class="muted">${escapeHtml(tt("receipt.none"))}</p>`;
       return;
     }
     box.innerHTML = `
@@ -1259,19 +1303,35 @@
   }
 
   function runPlan() {
+    state.planNonce = (state.planNonce || 0) + 1;
     const text = ($("#quick-input") && $("#quick-input").value) || "";
     let quickNotices = [];
+    const parsed = parseQuickInput(text, {
+      store: state.store,
+      budget: state.budget,
+      family: state.family,
+      days: state.days
+    });
     if (text.trim()) {
-      const parsed = parseQuickInput(text, {
-        store: state.store,
-        budget: state.budget,
-        family: state.family,
-        days: state.days
-      });
       state.store = parsed.store;
       state.budget = parsed.budget;
       state.family = parsed.family;
       state.days = parsed.days;
+      if (parsed.mealTypes && parsed.mealTypes.length) {
+        state.mealTypes = new Set(parsed.mealTypes);
+      }
+      if (parsed.allergies && parsed.allergies.length) {
+        parsed.allergies.forEach((a) => state.allergies.add(a));
+      }
+      if (parsed.pantry && parsed.pantry.length) {
+        parsed.pantry.forEach((p) => state.pantry.add(p));
+      }
+      // Listed grocery items → shared extras storage
+      if (parsed.extraItems && parsed.extraItems.length && window.ListTools) {
+        parsed.extraItems.forEach((name) => {
+          try { window.ListTools.addExtraByName(name); } catch (e) {}
+        });
+      }
       quickNotices = parsed.notices || [];
       refreshChipUI();
     }
@@ -1296,29 +1356,29 @@
   function ingestReceipt(raw, label) {
     const rawStr = String(raw || "");
     if (rawStr.length > RECEIPT_PASTE_MAX) {
-      $("#receipt-msg").textContent = "That paste was too large. Try a shorter receipt.";
+      $("#receipt-msg").textContent = tt("receipt.tooLarge");
       return;
     }
     const parsed = parseReceiptText(rawStr);
     const items = parsed.items || [];
     if (!items.length) {
       if (parsed.rejected > 0) {
-        $("#receipt-msg").textContent = "That line looked off — check quantities and prices.";
+        $("#receipt-msg").textContent = tt("receipt.lineOff");
       } else {
-        $("#receipt-msg").textContent = "Couldn't find priced lines. Try lines like: Milk,1,3.49";
+        $("#receipt-msg").textContent = tt("receipt.noLines");
       }
       return;
     }
     const total = items.reduce((s, it) => s + it.price * (it.qty || 1), 0);
     if (!Number.isFinite(total) || total <= 0) {
-      $("#receipt-msg").textContent = "That line looked off — check quantities and prices.";
+      $("#receipt-msg").textContent = tt("receipt.lineOff");
       return;
     }
     const trips = loadReceipts();
     trips.push({ id: Date.now(), label: label || "Trip", date: new Date().toISOString(), items, total });
     const ok = saveReceipts(trips);
     if (!ok) {
-      $("#receipt-msg").textContent = "Couldn't save on this phone — storage may be full. Try deleting old receipts.";
+      $("#receipt-msg").textContent = tt("receipt.storageFull");
       return;
     }
     let msg = "Saved " + items.length + " items · " + money(total) + ". Your receipts stay on this phone.";
@@ -1397,6 +1457,45 @@
       requestAnimationFrame(() => {
         const again = $("#shop-add-more-input");
         if (again) again.focus();
+      });
+    });
+  }
+
+
+  function needExampleChips() {
+    const raw = (window.I18N && window.I18N.t) ? [
+      tt("need.ex.list"),
+      tt("need.ex.organic"),
+      tt("need.ex.price"),
+      tt("need.ex.family"),
+      tt("need.ex.nopork"),
+      tt("need.ex.meals")
+    ] : [
+      "milk, eggs, bread, bananas",
+      "all organic brands",
+      "best price",
+      "family of 5, $150 a week",
+      "no pork",
+      "we want tacos, chili and quick lunches"
+    ];
+    return raw;
+  }
+
+  function renderNeedExamples() {
+    const root = $("#need-examples");
+    if (!root) return;
+    root.innerHTML = needExampleChips().map((label, i) =>
+      `<button type="button" class="chip" role="listitem" data-need-ex="${i}">${escapeHtml(label)}</button>`
+    ).join("");
+    root.querySelectorAll("[data-need-ex]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const input = $("#quick-input");
+        if (!input) return;
+        const val = btn.textContent.trim();
+        const cur = input.value.trim();
+        input.value = cur ? (cur.replace(/[,\s]+$/, "") + ", " + val) : val;
+        input.focus();
+        btn.classList.add("is-on");
       });
     });
   }
@@ -1587,14 +1686,15 @@
       reader.readAsText(file);
     });
     $("#btn-delete-data")?.addEventListener("click", () => {
-      if (!confirm("Delete all saved receipt data from this phone?")) return;
+      if (!confirm(tt("receipt.deleteConfirm"))) return;
       localStorage.removeItem(STORAGE_KEY);
-      $("#receipt-msg").textContent = "All receipt data deleted from this phone.";
+      $("#receipt-msg").textContent = tt("receipt.deleted");
       renderReceiptStats();
     });
 
     bindShopToolsOnce();
     renderExtrasChips();
+    renderNeedExamples();
 
     window.GroceryPlan = {
       parseQuickInput,
@@ -1673,6 +1773,7 @@
       }
       renderSeasonal();
       renderReceiptStats();
+      renderNeedExamples();
     },
     tt: tt
   });
