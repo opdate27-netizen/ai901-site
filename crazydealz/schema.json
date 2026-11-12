@@ -69,6 +69,24 @@
       },
       "price": "39.98",
       "priceCurrency": "USD"
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Rim repair (cracked rim)"
+      },
+      "price": "129.98",
+      "priceCurrency": "USD"
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Rim repair (bent rim)"
+      },
+      "price": "69.98",
+      "priceCurrency": "USD"
     }
   ]
 }
