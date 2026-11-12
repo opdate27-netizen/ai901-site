@@ -1,0 +1,74 @@
+{
+  "@context": "https://schema.org",
+  "@type": "TireShop",
+  "@id": "https://ai901.help/crazydealz/#shop",
+  "url": "https://ai901.help/crazydealz/",
+  "name": "Crazy Dealz Tires",
+  "telephone": "+16465068189",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "3395 Macon Rd",
+    "addressLocality": "Memphis",
+    "addressRegion": "TN",
+    "postalCode": "38122",
+    "addressCountry": "US"
+  },
+  "description": "Pit-stop fast used tire shop at 3395 Macon Rd in Memphis, Tennessee.",
+  "hasMap": "https://www.google.com/maps/search/?api=1&query=3395+Macon+Rd+Memphis+TN+38122",
+  "openingHoursSpecification": [
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ],
+      "opens": "07:30",
+      "closes": "19:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": "Saturday",
+      "opens": "08:00",
+      "closes": "19:00"
+    },
+    {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": "Sunday",
+      "opens": "10:00",
+      "closes": "17:00"
+    }
+  ],
+  "makesOffer": [
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Product",
+        "name": "Used tires",
+        "description": "Most sizes"
+      },
+      "price": "34.98",
+      "priceCurrency": "USD"
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Oil change"
+      },
+      "price": "24.98",
+      "priceCurrency": "USD"
+    },
+    {
+      "@type": "Offer",
+      "itemOffered": {
+        "@type": "Service",
+        "name": "Brakes"
+      },
+      "price": "39.98",
+      "priceCurrency": "USD"
+    }
+  ]
+}

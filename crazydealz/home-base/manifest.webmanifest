@@ -1,0 +1,17 @@
+{
+  "name": "Crazy Dealz Home Base",
+  "short_name": "Dealz Base",
+  "description": "Shortcuts that open the right page in your Google Business Profile for Crazy Dealz Tires.",
+  "start_url": "/crazydealz/home-base/",
+  "scope": "/crazydealz/home-base/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A2166",
+  "theme_color": "#0A2166",
+  "lang": "en",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -2,6 +2,10 @@ Anton: Copyright 2020 The Anton Project Authors.
 Local Google Fonts installation; Latin WOFF2 subset for this unpublished site.
 Source license: https://openfontlicense.org/open-font-license-official-text/
 
+Rubik Bubbles: Copyright 2020 The Rubik Filtered Project Authors (https://github.com/NaN-xyz/Rubik-Filtered). Reserved Font Name may apply; this file is a glyph-subset WOFF2 of Rubik Bubbles.
+Local WOFF2 subset (dollar sign and digits) for shop price callouts. SIL Open Font License 1.1.
+Source license: https://openfontlicense.org/open-font-license-official-text/
+
 SIL Open Font License Official Text
 SIL Open Font License
 OFLÂ Text
