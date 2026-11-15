@@ -88,5 +88,10 @@
       "price": "69.98",
       "priceCurrency": "USD"
     }
-  ]
+  ],
+  "image": [
+    "https://ai901.help/crazydealz/storefront-wide.jpg",
+    "https://ai901.help/crazydealz/og-image.jpg"
+  ],
+  "priceRange": "$"
 }
