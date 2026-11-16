@@ -378,10 +378,12 @@ body.signup-popup-open .mobile-call{display:none!important}
 <p class="lead" data-es="Déjenos su correo y le enviaremos recordatorios de servicio y noticias del taller. Puede darse de baja cuando quiera.">Leave your email for service reminders and shop news. Unsubscribe anytime.</p>
 </div>
 <noscript><p>Call (646) 506-8189 to join the list. / Llame al (646) 506-8189 para unirse a la lista.</p></noscript>
+<!-- data-endpoint stays empty until the separate Crazy Dealz Cloudflare Worker is deployed. Then set this and #signup-popup-form to the Worker URL (see crazydealz/signup-endpoint/README.md). An empty value keeps the honest "not open yet" message and sends nothing. -->
 <form class="signup-form" id="signup-form" data-endpoint="" novalidate>
 <input type="hidden" name="_subject" value="New Crazy Dealz pit crew list sign-up"/>
 <input type="hidden" name="language" id="f-lang" value="en"/>
 <input type="hidden" name="source" value="ai901.help/crazydealz"/>
+<input type="hidden" name="consent_version" value="cdz-signup-v1-2026-11-15"/>
 <label class="hp" aria-hidden="true">Leave blank<input type="text" name="_honey" tabindex="-1" autocomplete="off"/></label>
 <label for="f-email"><span data-es="Correo electrónico">Email</span><input id="f-email" type="email" name="email" autocomplete="email" required maxlength="120" inputmode="email" aria-required="true"/></label>
 <label for="f-first"><span data-es="Nombre <span class='opt'>(opcional)</span>">First name <span class="opt">(optional)</span></span><input id="f-first" type="text" name="first_name" autocomplete="given-name" maxlength="60"/></label>
@@ -443,10 +445,12 @@ body.signup-popup-open .mobile-call{display:none!important}
 <div class="number" data-es="LISTA DEL EQUIPO">PIT CREW LIST</div>
 <h2 id="signup-popup-title" data-es="Reciba recordatorios de servicio y ofertas del taller.">Get service reminders and shop deals.</h2>
 <p class="lead" id="signup-popup-lead" data-es="Déjenos su correo y le enviaremos recordatorios de servicio y noticias del taller. Puede darse de baja cuando quiera.">Leave your email for service reminders and shop news. Unsubscribe anytime.</p>
+<!-- data-endpoint stays empty until the separate Crazy Dealz Cloudflare Worker is deployed. Then set this and #signup-form to the same Worker URL. -->
 <form class="signup-form" id="signup-popup-form" data-endpoint="" novalidate>
 <input type="hidden" name="_subject" value="New Crazy Dealz pit crew list sign-up"/>
 <input type="hidden" name="language" value="en"/>
 <input type="hidden" name="source" value="ai901.help/crazydealz#popup"/>
+<input type="hidden" name="consent_version" value="cdz-signup-v1-2026-11-15"/>
 <label class="hp" aria-hidden="true">Leave blank<input type="text" name="_honey" tabindex="-1" autocomplete="off"/></label>
 <label for="p-email"><span data-es="Correo electrónico">Email</span><input id="p-email" type="email" name="email" autocomplete="email" required maxlength="120" inputmode="email" aria-required="true"/></label>
 <label for="p-first"><span data-es="Nombre <span class='opt'>(opcional)</span>">First name <span class="opt">(optional)</span></span><input id="p-first" type="text" name="first_name" autocomplete="given-name" maxlength="60"/></label>
@@ -491,7 +495,7 @@ if(form.elements._honey&&form.elements._honey.value){say('ok','ok');form.reset()
 const ep=(form.dataset.endpoint||'').trim();if(!ep){say('none','err');rememberPopup();return}
 say('wait','wait');const btn=form.querySelector('button[type=submit]');btn.disabled=true;
 try{const fd=new FormData(form);const emailTxt=(form.querySelector('[name=email_consent] + span')||{}).textContent||'';const smsTxt=(form.querySelector('[name=sms_consent] + span')||{}).textContent||'';fd.set('email_consent_text',emailTxt.trim());fd.set('sms_consent_text',sms?smsTxt.trim():'');fd.set('email_consent',cb.checked?'yes':'no');fd.set('sms_consent',(sms&&sms.checked)?'yes':'no');fd.set('consent_time',new Date().toISOString());
-const r=await fetch(ep,{method:'POST',headers:{Accept:'application/json'},body:fd});if(!r.ok)throw new Error(r.status);form.reset();const langField=form.querySelector('[name=language]');if(langField)langField.value=lang;say('ok','ok');rememberPopup();}catch(err){say('err','err');}finally{btn.disabled=false;}});}
+const r=await fetch(ep,{method:'POST',headers:{Accept:'application/json'},body:fd,mode:'cors',credentials:'omit'});let data=null;try{data=await r.json();}catch(e){}if(!r.ok||(data&&data.ok===false))throw new Error((data&&data.error)||r.status);form.reset();const langField=form.querySelector('[name=language]');if(langField)langField.value=lang;say('ok','ok');rememberPopup();}catch(err){say('err','err');}finally{btn.disabled=false;}});}
 bindSignup(document.getElementById('signup-form'),document.getElementById('form-status'));
 bindSignup(document.getElementById('signup-popup-form'),document.getElementById('popup-form-status'));
 const popup=document.getElementById('signup-popup');

@@ -1,0 +1,39 @@
+# Crazy Dealz Tires signup Worker
+# Deploy this from a NEW, separate Cloudflare account — not the ai901.help account.
+# Fill in account_id, database_id, and the KV id at deploy time. Do not deploy yet
+# while the shop-owner vs Joshua account question is still open.
+
+name = "crazy-dealz-signup"
+main = "src/index.js"
+compatibility_date = "2026-11-15"
+workers_dev = true
+
+# account_id = "YOUR_CLOUDFLARE_ACCOUNT_ID"
+
+[vars]
+MAIL_PROVIDER = "resend"
+MAIL_TO = "support@crazydealztires.com"
+MAIL_FROM = "Crazy Dealz Tires <noreply@crazydealztires.com>"
+CONSENT_TEXT_VERSION = "cdz-signup-v1-2026-11-15"
+ALLOW_DEV_ORIGINS = "false"
+ALLOW_NO_ORIGIN = "false"
+
+# Secrets (never commit; set with `npx wrangler secret put <NAME>`):
+#   MAIL_API_KEY      Resend API key, or bearer token for MAIL_PROVIDER=http
+#   MAIL_WEBHOOK_URL  Only when MAIL_PROVIDER=http
+#   IP_HASH_SALT      Long random string used to hash visitor IPs
+#   EXPORT_TOKEN      Long random string required to download the CSV
+
+[[d1_databases]]
+binding = "DB"
+database_name = "crazy-dealz-signups"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT"
+id = "00000000-0000-0000-0000-000000000000"
+
+# Local / unit-test defaults. wrangler dev uses local D1 + KV automatically.
+[env.dev]
+vars = { MAIL_PROVIDER = "log", MAIL_TO = "support@crazydealztires.com", MAIL_FROM = "Crazy Dealz Tires <noreply@crazydealztires.com>", CONSENT_TEXT_VERSION = "cdz-signup-v1-2026-11-15", ALLOW_DEV_ORIGINS = "true", ALLOW_NO_ORIGIN = "true" }

@@ -1,0 +1,8 @@
+# Copy to .dev.vars for local wrangler dev. Never commit .dev.vars.
+# These values are for local testing only.
+
+MAIL_PROVIDER=log
+MAIL_API_KEY=
+MAIL_WEBHOOK_URL=
+IP_HASH_SALT=dev-only-not-for-production
+EXPORT_TOKEN=dev-export-token
