@@ -211,6 +211,33 @@ header{padding:8px max(10px,calc(var(--corner) + 10px));gap:6px}
 .signup-form button.button{width:100%;text-align:center}
 .offer-ticker{margin:12px 0 32px;margin-left:calc(50% - 50vw)}
 }
+
+.signup-popup[hidden]{display:none!important}
+.signup-popup{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:28px 24px}
+.signup-popup-backdrop{position:absolute;inset:0;background:#06143acc}
+.signup-popup-sheet{position:relative;z-index:1;width:100%;max-width:440px;max-height:min(88vh,760px);overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--acid);color:#0a2166;border:3px solid #06143a;box-shadow:8px 10px 0 #06143a,0 24px 60px #0008;padding:22px 22px 24px}
+.signup-popup-close{position:absolute;top:8px;right:8px;width:44px;height:44px;border:2px solid #06143a;background:#fff;color:#0a2166;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;font:700 30px/1 Arial,Helvetica,sans-serif}
+.signup-popup-close:focus-visible{outline:3px solid #0a2166;outline-offset:2px}
+.signup-popup .number{color:#0a2166;letter-spacing:2px;margin:0 48px 0 0}
+.signup-popup h2{color:#0a2166;font-size:clamp(26px,4vw,36px);line-height:.95;margin:8px 0 10px;max-width:14ch;text-shadow:none}
+.signup-popup .lead{margin:0 0 14px;max-width:36ch;font-size:16px;line-height:1.4;color:#0a2166}
+.signup-popup .signup-form{box-shadow:4px 5px 0 #06143a;padding:18px}
+body.signup-popup-open{overflow:hidden}
+body.signup-popup-open .mobile-call{display:none!important}
+@media(prefers-reduced-motion:no-preference){
+.signup-popup-sheet{animation:signup-popup-in .28s ease-out}
+}
+@keyframes signup-popup-in{from{transform:translateY(10px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+@media(max-width:700px){
+.signup-popup{align-items:flex-end;padding:0}
+.signup-popup-sheet{max-width:none;max-height:min(82vh,calc(100dvh - 10px - env(safe-area-inset-top,0px)));border-radius:16px 16px 0 0;border-bottom:0;box-shadow:0 -10px 40px #0009;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.signup-popup h2{font-size:clamp(24px,7vw,32px)}
+.signup-popup .signup-form{padding:14px}
+@media(prefers-reduced-motion:no-preference){
+.signup-popup-sheet{animation-name:signup-popup-up}
+}
+@keyframes signup-popup-up{from{transform:translateY(100%);opacity:1}to{transform:none;opacity:1}}
+}
 </style>
 <script type="application/ld+json">
 {
@@ -409,6 +436,29 @@ header{padding:8px max(10px,calc(var(--corner) + 10px));gap:6px}
 <details class="reveal"><summary data-es="¿Cuál es su horario?">What are your hours?</summary><p data-es="Lun–Vie 7:30 AM–7 PM, Sáb 8 AM–7 PM, Dom 10 AM–5 PM.">Mon–Fri 7:30 AM–7 PM, Sat 8 AM–7 PM, Sun 10 AM–5 PM.</p></details>
 <div class="bottom reveal"><h2 data-es="Llame al equipo.">Call the pit crew.</h2><p class="muted" data-es="Díganos su vehículo y la medida de su llanta, y toque Llamar.">Tell us your vehicle and tire size, then tap Call.</p><a class="button" href="tel:+16465068189" data-es="Llamar (646) 506-8189">Call (646) 506-8189</a></div></section><a class="mobile-call button" href="tel:+16465068189" aria-label="Call the pit crew at (646) 506-8189" data-es-aria="Llame al equipo al (646) 506-8189" data-es="Llame al equipo">Call the pit crew</a></div></div></main>
 <footer>Crazy Dealz Tires · 3395 Macon Rd, Memphis, TN 38122<br/><nav aria-label="Services" data-es-aria="Servicios"><a href="used-tires/" data-es="Llantas usadas">Used tires</a> · <a href="oil-change/" data-es="Cambio de aceite">Oil change</a> · <a href="brakes/" data-es="Frenos">Brakes</a> · <a href="flat-repair/" data-es="Ponchaduras">Flat repair</a> · <a href="mount-and-balance/" data-es="Montaje y balanceo">Mount &amp; balance</a></nav><a href="privacy.html" data-es-href="privacy.html#es" id="privacy-link" data-es="Aviso de privacidad">Privacy note</a> · <span data-es="Sitio por">Site by</span> <a href="https://ai901.help">ai901</a></footer>
+<div class="signup-popup" id="signup-popup" hidden role="dialog" aria-modal="true" aria-labelledby="signup-popup-title" aria-describedby="signup-popup-lead">
+<div class="signup-popup-backdrop" data-popup-dismiss></div>
+<div class="signup-popup-sheet">
+<button type="button" class="signup-popup-close" aria-label="Close" data-es-aria="Cerrar"><span aria-hidden="true">&times;</span></button>
+<div class="number" data-es="LISTA DEL EQUIPO">PIT CREW LIST</div>
+<h2 id="signup-popup-title" data-es="Reciba recordatorios de servicio y ofertas del taller.">Get service reminders and shop deals.</h2>
+<p class="lead" id="signup-popup-lead" data-es="Déjenos su correo y le enviaremos recordatorios de servicio y noticias del taller. Puede darse de baja cuando quiera.">Leave your email for service reminders and shop news. Unsubscribe anytime.</p>
+<form class="signup-form" id="signup-popup-form" data-endpoint="" novalidate>
+<input type="hidden" name="_subject" value="New Crazy Dealz pit crew list sign-up"/>
+<input type="hidden" name="language" value="en"/>
+<input type="hidden" name="source" value="ai901.help/crazydealz#popup"/>
+<label class="hp" aria-hidden="true">Leave blank<input type="text" name="_honey" tabindex="-1" autocomplete="off"/></label>
+<label for="p-email"><span data-es="Correo electrónico">Email</span><input id="p-email" type="email" name="email" autocomplete="email" required maxlength="120" inputmode="email" aria-required="true"/></label>
+<label for="p-first"><span data-es="Nombre <span class='opt'>(opcional)</span>">First name <span class="opt">(optional)</span></span><input id="p-first" type="text" name="first_name" autocomplete="given-name" maxlength="60"/></label>
+<label for="p-phone"><span data-es="Teléfono <span class='opt'>(opcional, para mensajes de texto)</span>">Phone <span class="opt">(optional, for texts)</span></span><input id="p-phone" type="tel" name="phone" autocomplete="tel" inputmode="tel" maxlength="30"/></label>
+<label class="consent" for="p-email-consent"><input id="p-email-consent" type="checkbox" name="email_consent" value="yes" aria-required="true"/><span data-es="Envíenme por correo recordatorios de servicio y noticias del taller">Email me service reminders and shop news</span></label>
+<label class="consent consent-sms" for="p-sms-consent"><input id="p-sms-consent" type="checkbox" name="sms_consent" value="yes"/><span data-es="Envíenme recordatorios por mensaje de texto (pueden aplicar tarifas de mensajes y datos, responda STOP para darse de baja, el consentimiento no es obligatorio para comprar)">Text me reminders (msg &amp; data rates may apply, reply STOP to opt out, consent not required to buy)</span></label>
+<button type="submit" class="button" data-es="Unirme a la lista">Join the list</button>
+<p class="signup-privacy" data-es="Vea el <a href='privacy.html#es'>aviso de privacidad</a>.">See the <a href="privacy.html">privacy note</a>.</p>
+<p class="form-status" id="popup-form-status" role="status" aria-live="polite"></p>
+</form>
+</div>
+</div>
 <script>
 (()=>{'use strict';const root=document.documentElement;const motion=matchMedia('(prefers-reduced-motion: reduce)');const connection=navigator.connection;const weak=(navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(connection&&connection.saveData);let io=null,raf=0;const tireScrolls=[...document.querySelectorAll('.tire-scroll')];const ticker=document.querySelector('.ticker-scroll');const nativeView=!!(window.CSS&&CSS.supports('animation-timeline','view()'));
 function roll(){raf=0;if(motion.matches)return;const range=Math.max(1,document.documentElement.scrollHeight-innerHeight);const t=Math.min(1,Math.max(0,scrollY/range));const deg=t*720;tireScrolls.forEach((el,i)=>{const dir=(i===0||i===3)?1:-1;el.style.transform='rotate('+(dir*deg)+'deg)';});/* ticker stays fully visible; no translateX */}
@@ -424,22 +474,42 @@ let lang=d.getAttribute('data-lang')==='es'?'es':'en';
 function apply(l){lang=l;d.lang=l;d.setAttribute('data-lang',l);
 pairs.forEach(([a,attr])=>document.querySelectorAll('['+a+']').forEach(el=>{const k='en_'+(attr||'html');if(el[k]===undefined)el[k]=attr?el.getAttribute(attr):el.innerHTML;const v=l==='es'?el.getAttribute(a):el[k];if(attr){if(v==null)el.removeAttribute(attr);else el.setAttribute(attr,v);}else el.innerHTML=v;}));
 document.title=META[l].title;const md=document.querySelector('meta[name=description]');if(md)md.content=META[l].desc;
-const f=document.getElementById('f-lang');if(f)f.value=l;const st=document.getElementById('form-status');if(st){st.textContent='';st.className='form-status';}
+document.querySelectorAll('form [name=language]').forEach(f=>{f.value=l});document.querySelectorAll('.form-status').forEach(s=>{s.textContent='';s.className='form-status';});
 d.classList.remove('i18n-pending');}
 apply(lang);
 const t=document.getElementById('lang-toggle');if(t)t.addEventListener('click',()=>{const n=lang==='es'?'en':'es';try{localStorage.setItem('cdz-lang',n)}catch(e){}apply(n);});
 /* sign-up */
-const form=document.getElementById('signup-form'),st=document.getElementById('form-status');
-function say(k,cls){st.innerHTML=MSG[lang][k];st.className='form-status '+cls;}
-if(form)form.addEventListener('submit',async e=>{e.preventDefault();const em=form.email,ph=form.phone,cb=form.email_consent,sms=form.sms_consent;
+const POP_KEY='cdz-signup-popup',WEEK=7*24*60*60*1000;
+function popDismissed(){try{const v=Number(localStorage.getItem(POP_KEY)||0);return!!v&&(Date.now()-v)<WEEK;}catch(e){return false;}}
+function rememberPopup(){try{localStorage.setItem(POP_KEY,String(Date.now()));}catch(e){}}
+function bindSignup(form,st){if(!form||!st)return;function say(k,cls){st.innerHTML=MSG[lang][k];st.className='form-status '+cls;}
+form.addEventListener('submit',async e=>{e.preventDefault();const em=form.elements.email,ph=form.elements.phone,cb=form.elements.email_consent,sms=form.elements.sms_consent;
 if(!em.value.trim()||!em.checkValidity()){say('email','err');em.focus();return}
 if(!cb.checked){say('consent','err');cb.focus();return}
 if(sms&&sms.checked&&!(ph&&ph.value.trim())){say('phone','err');ph.focus();return}
-if(form._honey&&form._honey.value){say('ok','ok');form.reset();return}
-const ep=(form.dataset.endpoint||'').trim();if(!ep){say('none','err');return}
+if(form.elements._honey&&form.elements._honey.value){say('ok','ok');form.reset();const lf=form.querySelector('[name=language]');if(lf)lf.value=lang;rememberPopup();return}
+const ep=(form.dataset.endpoint||'').trim();if(!ep){say('none','err');rememberPopup();return}
 say('wait','wait');const btn=form.querySelector('button[type=submit]');btn.disabled=true;
-try{const fd=new FormData(form);const emailTxt=(form.querySelector('#f-email-consent + span')||{}).textContent||'';const smsTxt=(form.querySelector('#f-sms-consent + span')||{}).textContent||'';fd.set('email_consent_text',emailTxt.trim());fd.set('sms_consent_text',sms?smsTxt.trim():'');fd.set('email_consent',cb.checked?'yes':'no');fd.set('sms_consent',(sms&&sms.checked)?'yes':'no');fd.set('consent_time',new Date().toISOString());
-const r=await fetch(ep,{method:'POST',headers:{Accept:'application/json'},body:fd});if(!r.ok)throw new Error(r.status);form.reset();document.getElementById('f-lang').value=lang;say('ok','ok');}catch(err){say('err','err');}finally{btn.disabled=false;}});
+try{const fd=new FormData(form);const emailTxt=(form.querySelector('[name=email_consent] + span')||{}).textContent||'';const smsTxt=(form.querySelector('[name=sms_consent] + span')||{}).textContent||'';fd.set('email_consent_text',emailTxt.trim());fd.set('sms_consent_text',sms?smsTxt.trim():'');fd.set('email_consent',cb.checked?'yes':'no');fd.set('sms_consent',(sms&&sms.checked)?'yes':'no');fd.set('consent_time',new Date().toISOString());
+const r=await fetch(ep,{method:'POST',headers:{Accept:'application/json'},body:fd});if(!r.ok)throw new Error(r.status);form.reset();const langField=form.querySelector('[name=language]');if(langField)langField.value=lang;say('ok','ok');rememberPopup();}catch(err){say('err','err');}finally{btn.disabled=false;}});}
+bindSignup(document.getElementById('signup-form'),document.getElementById('form-status'));
+bindSignup(document.getElementById('signup-popup-form'),document.getElementById('popup-form-status'));
+const popup=document.getElementById('signup-popup');
+const FOCUSABLE='a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+let usedInline=false,popTimer=0,lastFocus=null;
+function markInlineUsed(){usedInline=true;if(popTimer){clearTimeout(popTimer);popTimer=0;}if(popup&&!popup.hidden)closePopup(false);}
+function setPopupInert(on){if(!popup)return;[...document.body.children].forEach(n=>{if(n===popup||n.tagName==='SCRIPT')return;if(on){n.setAttribute('inert','');n.setAttribute('aria-hidden','true');}else{n.removeAttribute('inert');n.removeAttribute('aria-hidden');}});}
+function openPopup(){if(!popup||usedInline||popDismissed()||!popup.hidden)return;lastFocus=document.activeElement;popup.hidden=false;document.body.classList.add('signup-popup-open');setPopupInert(true);const btn=popup.querySelector('.signup-popup-close');(btn||popup).focus();}
+function closePopup(persist){if(!popup||popup.hidden)return;if(persist!==false)rememberPopup();popup.hidden=true;document.body.classList.remove('signup-popup-open');setPopupInert(false);if(lastFocus&&typeof lastFocus.focus==='function')try{lastFocus.focus()}catch(e){}}
+if(popup){popup.querySelector('.signup-popup-close').addEventListener('click',()=>closePopup());
+popup.querySelector('[data-popup-dismiss]').addEventListener('click',()=>closePopup());
+document.addEventListener('keydown',e=>{if(popup.hidden)return;if(e.key==='Escape'){e.preventDefault();closePopup();return;}if(e.key!=='Tab')return;const nodes=[...popup.querySelectorAll(FOCUSABLE)].filter(el=>!el.closest('[hidden],.hp')&&!el.disabled&&el.tabIndex!==-1);if(!nodes.length){e.preventDefault();return;}const first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}});
+document.addEventListener('focusin',e=>{if(!popup.hidden&&!popup.contains(e.target)){const btn=popup.querySelector('.signup-popup-close');(btn||popup).focus();}});}
+document.addEventListener('cdz-open-signup-popup',()=>openPopup());
+const inlineForm=document.getElementById('signup-form');
+if(inlineForm){inlineForm.addEventListener('focusin',markInlineUsed);inlineForm.addEventListener('input',markInlineUsed);}
+const heroJoin=document.querySelector('.hero-signup-link');if(heroJoin)heroJoin.addEventListener('click',markInlineUsed);
+if(!popDismissed())popTimer=setTimeout(openPopup,20000);
 /* phone call bar: hide while the hero call button or the sign-up form is on screen */
 const bar=document.querySelector('.mobile-call'),heroBtns=document.querySelector('.hero-actions'),sign=document.getElementById('join');
 if(bar&&'IntersectionObserver'in window){const vis=new Map();const upd=()=>{const hide=[...vis.values()].some(Boolean);bar.classList.toggle('hide',hide);};
